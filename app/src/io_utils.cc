@@ -12,7 +12,7 @@
 #include "../includes/io_utils.h"
 #include "../includes/report_utils.h"
 
-int utils::io::vectors::GetNoDatasetVectors(std::string &file_name,
+int utils::io::vectors::GetNoDataVectors(std::string &file_name,
   uint32_t &no_vectors, utils::ExitCode &status) {
 
   FILE *fp;                 // To opem the file for reading
@@ -28,7 +28,7 @@ int utils::io::vectors::GetNoDatasetVectors(std::string &file_name,
   }
   // Extract characters from file and store in character c
   for (c = getc(fp); c != EOF; c = getc(fp)) {
-    if (c == '\n') {// Increment count if this character is newline
+    if (c == '\n') { // Increment count if this character is newline
       count = count + 1;
     }
   }
@@ -67,6 +67,34 @@ int utils::io::vectors::GetVectorsDim(std::string &file_name, uint16_t &dim,
   }
   // close the file
   file.close();
+  // everything ok, return SUCCESS
+  return SUCCESS;
+}
+
+int utils::io::curves::GetNoDataCurves(std::string &file_name,
+  uint32_t &no_curves, utils::ExitCode &status) {
+
+  FILE *fp;                 // To opem the file for reading
+  /* Initialize count to -1 to skip first line which contains the identifier */
+  unsigned int count = -1;  // Line counter (result)
+  char c;                   // To store a character read from file
+  // Open the file
+  fp = fopen(file_name.c_str(), "r");
+  // Check if file exists
+  if (!fp) {
+    status = INVALID_DATASET;
+    return FAIL;
+  }
+  // Extract characters from file and store in character c
+  for (c = getc(fp); c != EOF; c = getc(fp)) {
+    if (c == '\n') { // Increment count if this character is newline
+      count = count + 1;
+    }
+  }
+  // Pass info
+  no_curves = count;
+  // Close the file
+  fclose(fp);
   // everything ok, return SUCCESS
   return SUCCESS;
 }

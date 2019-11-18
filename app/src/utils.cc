@@ -35,5 +35,8 @@ void utils::InputInfo::Print(const std::string idf) {
               << static_cast<unsigned int>(N) << std::endl;
     std::cout << "Dataset vectors dimension: "
               << static_cast<unsigned int>(D) << std::endl;
+  } else if (idf == "curves") {
+    std::cout << "Number of dataset curves: "
+              << static_cast<unsigned int>(N) << std::endl;
   }
 }
