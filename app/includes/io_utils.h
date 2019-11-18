@@ -19,6 +19,17 @@ namespace utils {
     */
     int GetFirstLine(std::string &file_name, std::string &first_line,
       utils::ExitCode &status);
+    /** \brief ReadConfig - Reads configuration file
+      @par file_name - Relative path to the dataset
+      @par no_clusters - Total number of clusters
+      @par no_grids - Total number of grids used by grid LSh
+      @par no_hf - Total number of LSH hash function
+      @par no_ht - Total number of LSH hash tables
+      @par ExitCode &statues - enumerated ExitCode provided from namespace utils
+      return: SUCCESS or FAIL
+    */
+    int ReadConfig(std::string &file_name, uint8_t& no_clusters,
+      uint8_t& no_grids, uint8_t& no_hf, uint8_t& no_ht, utils::ExitCode &status);
     /* Vectors I/O utils */
     namespace vectors {
       /** \brief ReadFile - Reads file provided by user and

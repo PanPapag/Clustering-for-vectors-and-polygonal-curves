@@ -72,6 +72,21 @@ int main(int argc, char **argv) {
             << std::endl;
   std::cout << "\nClustering: " << clustering_object << std::endl;
 
+  /* Read configuration file and pass parameters to the input_info struct */
+  start = high_resolution_clock::now();
+  std::cout << "\nReading configuration file.." << std::endl;
+  exit_code = utils::io::ReadConfig(input_info.config_file, input_info.K,
+                                    input_info.grids, input_info.L,
+                                    input_info.k, status);
+  if (exit_code != utils::SUCCESS) {
+    utils::report::ReportError(status);
+  }
+  stop = high_resolution_clock::now();
+  total_time = duration_cast<duration<double>>(stop - start);
+  std::cout << "Reading configuration file completed successfully." << std::endl;
+  std::cout << "Time elapsed: " << total_time.count() << " seconds"
+            << std::endl;
+
   if (clustering_object == "vectors") {
     #define T double
     #define U std::string
