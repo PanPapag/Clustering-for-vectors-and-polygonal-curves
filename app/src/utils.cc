@@ -17,7 +17,7 @@ void utils::ShowUsage(const std::string &program_name,
   exit(EXIT_FAILURE);
 }
 
-void utils::InputInfo::Print(void) {
+void utils::InputInfo::Print(const std::string idf) {
   std::cout << std::endl;
   std::cout << "Input file: " << input_file << std::endl;
   std::cout << "Configuration file: " << config_file << std::endl;
@@ -30,6 +30,10 @@ void utils::InputInfo::Print(void) {
             << static_cast<unsigned int>(L) << std::endl;
   std::cout << "Number of vector hash functions: "
             << static_cast<unsigned int>(k) << std::endl;
-  std::cout << "Number of dataset points: "
-            << static_cast<unsigned int>(N) << std::endl;
+  if (idf == "vectors") {
+    std::cout << "Number of dataset vectors: "
+              << static_cast<unsigned int>(N) << std::endl;
+    std::cout << "Dataset vectors dimension: "
+              << static_cast<unsigned int>(D) << std::endl;
+  }
 }

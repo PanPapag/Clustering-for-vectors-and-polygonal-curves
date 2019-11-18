@@ -12,12 +12,13 @@
 #include "../includes/io_utils.h"
 #include "../includes/report_utils.h"
 
-int utils::io::GetDataPoints(std::string &file_name, uint32_t &no_vectors,
-  utils::ExitCode &status) {
+int utils::io::vectors::GetNoDatasetVectors(std::string &file_name,
+  uint32_t &no_vectors, utils::ExitCode &status) {
 
-  FILE *fp;                // To opem the file for reading
-  unsigned int count = 0;  // Line counter (result)
-  char c;                  // To store a character read from file
+  FILE *fp;                 // To opem the file for reading
+  /* Initialize count to -1 to skip first line which contains the identifier */
+  unsigned int count = -1;  // Line counter (result)
+  char c;                   // To store a character read from file
   // Open the file
   fp = fopen(file_name.c_str(), "r");
   // Check if file exists
@@ -39,7 +40,7 @@ int utils::io::GetDataPoints(std::string &file_name, uint32_t &no_vectors,
   return SUCCESS;
 }
 
-int utils::io::GetPointsDim(std::string &file_name, uint16_t &dim,
+int utils::io::vectors::GetVectorsDim(std::string &file_name, uint16_t &dim,
   utils::ExitCode &status) {
 
   std::ifstream file;
@@ -51,7 +52,10 @@ int utils::io::GetPointsDim(std::string &file_name, uint16_t &dim,
     return FAIL;
   }
   else {
-    // Get the first line
+    // Skip first line which contains the object identifier
+    std::string temp;
+    getline(file, temp);
+    // Get the next one line
     if (getline(file, line)) {
       // Get total number of elements
       int count =  std::distance(std::istream_iterator<std::string>(
@@ -64,5 +68,26 @@ int utils::io::GetPointsDim(std::string &file_name, uint16_t &dim,
   // close the file
   file.close();
   // everything ok, return SUCCESS
+  return SUCCESS;
+}
+
+int utils::io::GetFirstLine(std::string &file_name,
+  std::string &first_line, utils::ExitCode &status) {
+
+  // Open file
+  std::ifstream infile;
+  infile.open(file_name);
+  // Check if file exists
+  if (!infile) {
+    status = INVALID_DATASET;
+    return FAIL;
+  }
+  infile >> first_line;
+  if (first_line != "vectors" && first_line != "curves") {
+    status = DATASET_ERROR;
+    return FAIL;
+  }
+  // close the file
+  infile.close();
   return SUCCESS;
 }

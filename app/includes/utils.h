@@ -34,8 +34,9 @@ namespace utils {
     uint8_t grids = 2;           // number of grids
     uint8_t K;                   // number of clusters
     uint32_t N;                  // number of dataset points
+    uint16_t D;                  // dimension of dataset points
     bool complete = false;       // flag to ouput each cluster analytically or not
-    void Print(void);            // print method of the InputInfo struct
+    void Print(const std::string);     
   };
   /** \brief ShowUsage - Prints the usage of the program
     @par const std::string &name - Pass by reference the name of the program

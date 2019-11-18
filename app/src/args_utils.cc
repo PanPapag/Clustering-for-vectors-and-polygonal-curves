@@ -57,9 +57,9 @@ int utils::args::ReadArguments(int argc, char **argv,
     }
   }
 
-  const char * const short_opts = "d:q:k:L:o:";
+  const char * const short_opts = "i:c:o:a:";
   const option long_opts[] = {
-           {"input", required_argument, nullptr, 'd'},
+           {"input", required_argument, nullptr, 'i'},
            {"config", required_argument, nullptr, 'c'},
            {"output", required_argument, nullptr, 'o'},
            {"complete", optional_argument, nullptr, 'a'},
@@ -75,7 +75,7 @@ int utils::args::ReadArguments(int argc, char **argv,
      }
 
      switch (opt) {
-       case 'd': {
+       case 'i': {
         input_info.input_file = optarg;
         break;
       }
