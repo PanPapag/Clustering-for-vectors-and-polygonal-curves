@@ -204,6 +204,26 @@ int main(int argc, char **argv) {
       Τest space - NOTE whichever test we operate, delete it before commit
       to master branch in order to avoid conflicts
     */
+
+    /* TEST: Initializing curves centroids */
+    using namespace cluster::initialization::curves;
+    auto curves_centroids = ParkJunInit(dataset_curves, dataset_curves_lengths,
+                                        dataset_curves_offsets, input_info.N,
+                                        input_info.K);
+    std::vector<std::pair<T,T>> centroids = std::get<0>(curves_centroids);
+    std::vector<int> centroids_lengths = std::get<1>(curves_centroids);
+    std::vector<int> centroids_offsets = std::get<2>(curves_centroids);
+    for (size_t i = 0; i < input_info.K; ++i) {
+      std::cout << "Centroid" << i << std::endl;
+      for (size_t j = 0; j < centroids_lengths[i]; ++j) {
+        std::cout << "(" << std::get<0>(centroids[centroids_offsets[i] + j])
+                  << "," << std::get<1>(centroids[centroids_offsets[i] + j])
+                  << ") ";
+      }
+      std::cout << std::endl;
+      std::cout << "---------------------------------------------"  << std::endl;
+    }
+
   }
 
   return EXIT_SUCCESS;

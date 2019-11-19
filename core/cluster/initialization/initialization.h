@@ -1,13 +1,14 @@
 #ifndef INITIALIZATION
 #define INITIALIZATION
 
+#include <tuple>
+
 #include "../../../core/metric/metric.h"
 #include "../../../core/utils/utils.h"
 
 namespace cluster {
-
   namespace initialization {
-
+    /* Initialization Algorithms for vectors */
     namespace vectors {
       /** \brief Initilization of cluster centroids
         Details:
@@ -19,6 +20,10 @@ namespace cluster {
             for i = 1,...,n
           (3) Return the k objects with k smallest vi values.
           Algorithm proposed in [Park-Jun’09]
+        @par[in] const std::vector<T>& dataset_vectors
+        @par[in] const int& no_vectors
+        @par[in] const int& vectors_dim
+        @par[in] const int& no_clusters
       */
       template <typename T>
       std::vector<T> ParkJunInit(const std::vector<T>& dataset_vectors,
@@ -39,7 +44,7 @@ namespace cluster {
             }
           }
         }
-        // Declare 1D v array and computes its values as the algorithm above proposes
+        // Declare 1D v array and computes its values as the algorithm proposes
         std::vector<T> v(no_vectors);
         for (size_t i = 0; i < no_vectors; ++i) {
           T o_sum{};
@@ -54,7 +59,7 @@ namespace cluster {
         }
         // Find indices of no_clusters smallest v_array values
         std::vector<int> idx = utils::ArgMin<T>(v, no_clusters);
-        // Initialize centroids
+        // Initialize vector centroids
         std::vector<T> centroids(no_clusters * vectors_dim);
         for (size_t i = 0; i < no_clusters; ++i) {
           for (size_t j = 0; j < vectors_dim; ++j) {
@@ -65,9 +70,75 @@ namespace cluster {
         return centroids;
       }
     }
-
+    /* Initialization Algorithms for curves */
     namespace curves {
+      /** \brief Initilization of cluster centroids using Park-Jun Algorithm
+        @par[in] const std::vector<std::pair<T,T>>& dataset_curves
+        @par[in] const td::vector<int>& dataset_curves_lengths
+        @par[in] const int& no_curves
+        @par[in] const int& no_clusters
+        return A tuple of:
+          1) std::vector<std::pair<T,T> which represents the centroids curves
+          2) std::vector<int> which stores centroids curves lengths
+          3) std::vector<int> which stores centroids curves offsets
+      */
+      template <typename T>
+      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
+      ParkJunInit(const std::vector<std::pair<T,T>>& dataset_curves,
+        const std::vector<int>& dataset_curves_lengths,
+        const std::vector<int>& dataset_curves_offsets,
+        const int& no_curves, const int& no_clusters) {
 
+        // Declare 2D d array which holds all distances between the curves
+        T d_array[no_curves][no_curves];
+        // Calculate all distances using ManhattanDistance
+        for (size_t i = 0; i < no_curves; ++i) {
+          for (size_t j = 0; j < no_curves; ++j) {
+            if (i == j) {
+              d_array[i][j] = {};
+            } else {
+              d_array[i][j] = metric::DTWDistance<T> (
+                std::next(dataset_curves.begin(),dataset_curves_offsets[i]),
+                std::next(dataset_curves.begin(),
+                          dataset_curves_offsets[i] + dataset_curves_lengths[i]),
+                std::next(dataset_curves.begin(),dataset_curves_offsets[j]),
+                std::next(dataset_curves.begin(),
+                          dataset_curves_offsets[j] + dataset_curves_lengths[j]));
+            }
+          }
+        }
+        // Declare 1D v array and computes its values as the algorithm proposes
+        std::vector<T> v(no_curves);
+        for (size_t i = 0; i < no_curves; ++i) {
+          T o_sum{};
+          for (size_t j = 0; j < no_curves; ++j) {
+            T i_sum{};
+            for (size_t t = 0; t < no_curves; ++t) {
+              i_sum += d_array[j][t];
+            }
+            o_sum += d_array[i][j] / i_sum;
+          }
+          v[i] = o_sum;
+        }
+
+        // Find indices of no_clusters smallest v_array values
+        std::vector<int> idx = utils::ArgMin<T>(v, no_clusters);
+        // Initialize curves centroids 
+        std::vector<std::pair<T,T>> centroids;
+        std::vector<int> centroids_lengths(no_clusters);
+        std::vector<int> centroids_offsets(no_clusters);
+        int offset{};
+        for (size_t i = 0; i < idx.size(); ++i) {
+          centroids_lengths[i] = dataset_curves_lengths[idx[i]];
+          for (size_t j = 0; j < centroids_lengths[i]; ++j) {
+            centroids.push_back(dataset_curves[dataset_curves_offsets[idx[i]] + j]);
+          }
+          centroids_offsets[i] = offset;
+          offset += centroids_lengths[i];
+        }
+        // Return Initialized centroids
+        return std::make_tuple(centroids,centroids_lengths,centroids_offsets);
+      }
     }
   }
 }

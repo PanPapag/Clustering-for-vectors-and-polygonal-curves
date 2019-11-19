@@ -146,14 +146,14 @@ namespace utils {
       if(q.size() < k) {
         q.push(std::pair<T,int>(input[i], i));
       }
-      else if(q.top().first < input[i]){
-          q.pop();
-          q.push(std::pair<T,int>(input[i], i));
+      else if(q.top().first < input[i]) {
+        q.pop();
+        q.push(std::pair<T,int>(input[i], i));
       }
     }
     // Define result vector to be returned
     std::vector<int> result(k);
-    for (int i = 0; i < k; ++i) {
+    for (size_t i = 0; i < k; ++i) {
       result[k - i - 1] = q.top().second;
       q.pop();
     }
