@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <queue>
 
 namespace utils {
   /** \brief Computes modular exponentiation
@@ -131,6 +132,32 @@ namespace utils {
     } else {
       return max(val1, std::forward<Ts>(vs)...);
     }
+  }
+  /** \brief Returns a vector of k indices with smallest values
+    @par[in] const std::vector<T>& input - Given array of values
+    @par[in] k - number of indices we need
+  */
+  template <typename T>
+  std::vector<int> ArgMin(const std::vector<T>& input, const int& k = 1) {
+    // Define a priority_queue data structure
+    std::priority_queue<std::pair<T,int>, std::vector<std::pair<T,int>>,
+                        std::greater <std::pair<T,int>>> q;
+    for (size_t i = 0; i < input.size(); ++i) {
+      if(q.size() < k) {
+        q.push(std::pair<T,int>(input[i], i));
+      }
+      else if(q.top().first < input[i]){
+          q.pop();
+          q.push(std::pair<T,int>(input[i], i));
+      }
+    }
+    // Define result vector to be returned
+    std::vector<int> result(k);
+    for (int i = 0; i < k; ++i) {
+      result[k - i - 1] = q.top().second;
+      q.pop();
+    }
+    return result;
   }
 }
 

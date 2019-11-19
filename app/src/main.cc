@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "../../core/cluster/initialization/initialization.h"
 #include "../../core/metric/metric.h"
 #include "../../core/utils/utils.h"
 
