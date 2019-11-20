@@ -5,6 +5,7 @@
 #include <fstream>
 #include <tuple>
 #include <vector>
+#include <algorithm>
 
 #include "../../core/utils/utils.h"
 

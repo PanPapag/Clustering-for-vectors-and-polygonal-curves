@@ -153,6 +153,9 @@ int main(int argc, char **argv) {
       Τest space - NOTE whichever test we operate, delete it before commit
       to master branch in order to avoid conflicts
     */
+    using namespace cluster::initialization::vectors;
+    std::vector<T> centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
+
   } else if (clustering_object == "curves") {
     #define T double
     #define U int
@@ -207,7 +210,7 @@ int main(int argc, char **argv) {
 
     /* TEST: Initializing curves centroids */
     using namespace cluster::initialization::curves;
-    auto curves_centroids = ParkJunInit(dataset_curves, dataset_curves_lengths,
+    /* auto curves_centroids = ParkJunInit(dataset_curves, dataset_curves_lengths,
                                         dataset_curves_offsets, input_info.N,
                                         input_info.K);
     std::vector<std::pair<T,T>> centroids = std::get<0>(curves_centroids);
@@ -218,6 +221,24 @@ int main(int argc, char **argv) {
       for (size_t j = 0; j < centroids_lengths[i]; ++j) {
         std::cout << "(" << std::get<0>(centroids[centroids_offsets[i] + j])
                   << "," << std::get<1>(centroids[centroids_offsets[i] + j])
+                  << ") ";
+      }
+      std::cout << std::endl;
+      std::cout << "---------------------------------------------"  << std::endl;
+    }
+    */
+    auto curves_centers = RandomInit(dataset_curves, dataset_curves_lengths,
+                                        dataset_curves_offsets, input_info.N,
+                                        input_info.K);
+    
+    std::vector<std::pair<T,T>> centers = std::get<0>(curves_centers);
+    std::vector<int> centers_lengths = std::get<1>(curves_centers);
+    std::vector<int> centers_offsets = std::get<2>(curves_centers);
+    for (size_t i = 0; i < input_info.K; ++i) {
+      std::cout << "Center " << i << std::endl;
+      for (size_t j = 0; j < centers_lengths[i]; ++j) {
+        std::cout << "(" << std::get<0>(centers[centers_offsets[i] + j])
+                  << "," << std::get<1>(centers[centers_offsets[i] + j])
                   << ") ";
       }
       std::cout << std::endl;
