@@ -11,6 +11,7 @@
 
 #include "../../core/cluster/initialization/initialization.h"
 #include "../../core/cluster/assignment/assignment.h"
+#include "../../core/cluster/update/update.h"
 #include "../../core/metric/metric.h"
 #include "../../core/utils/utils.h"
 
@@ -157,10 +158,23 @@ int main(int argc, char **argv) {
       to master branch in order to avoid conflicts
     */
     using namespace cluster::initialization::vectors;
-    std::vector<T> centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
+    auto centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
+    for(auto& i:centers) {
+      std::cout << i << " "; 
+    }
+    std::cout << std::endl;
     
     using namespace cluster::assignment::vectors;
-    LloydsAssignment(dataset_vectors,centers,input_info.N,input_info.D,input_info.K);
+    auto clusters = LloydsAssignment(dataset_vectors,centers,input_info.N,input_info.D,input_info.K);
+
+    using namespace cluster::update::vectors;
+    auto new_centers = LloydsUpdate(dataset_vectors,centers,input_info.N,input_info.D,
+                                    input_info.K,std::get<0>(clusters),std::get<1>(clusters));
+
+    for(auto& i:new_centers) {
+      std::cout << i << " "; 
+    }
+    std::cout << std::endl;
 
   } else if (clustering_object == "curves") {
     #define T double
@@ -219,11 +233,24 @@ int main(int argc, char **argv) {
     auto curves_centers = RandomInit(dataset_curves, dataset_curves_lengths,
                                       dataset_curves_offsets, input_info.N,
                                       input_info.K);
+    for(auto& i:curves_centers) {
+      std::cout << i << " "; 
+    }
+    std::cout << std::endl;
   
     using namespace cluster::assignment::curves;
-    auto vec = LloydsAssignment(dataset_curves,curves_centers, dataset_curves_lengths,
+    auto clusters = LloydsAssignment(dataset_curves,curves_centers, dataset_curves_lengths,
                                 dataset_curves_offsets, input_info.N,
                                 input_info.K);
+    
+    using namespace cluster::update::curves;
+    auto new_centers = LloydsUpdate(dataset_curves,curves_centers, dataset_curves_lengths,
+                                dataset_curves_offsets, input_info.N,
+                                input_info.K, std::get<0>(clusters),std::get<1>(clusters));
+    for(auto& i:new_centers) {
+      std::cout << i << " "; 
+    }
+    std::cout << std::endl;
   }
 
   return EXIT_SUCCESS;
