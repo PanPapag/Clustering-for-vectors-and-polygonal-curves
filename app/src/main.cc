@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "../../core/cluster/initialization/initialization.h"
+#include "../../core/cluster/assignment/assignment.h"
 #include "../../core/metric/metric.h"
 #include "../../core/utils/utils.h"
 
@@ -153,9 +154,7 @@ int main(int argc, char **argv) {
       Τest space - NOTE whichever test we operate, delete it before commit
       to master branch in order to avoid conflicts
     */
-    using namespace cluster::initialization::vectors;
-    std::vector<T> centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
-
+    
   } else if (clustering_object == "curves") {
     #define T double
     #define U int

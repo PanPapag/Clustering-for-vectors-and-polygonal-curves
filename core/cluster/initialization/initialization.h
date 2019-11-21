@@ -81,6 +81,10 @@ namespace cluster {
             rand_vec[i] = i;
           }
           std::random_shuffle(rand_vec.begin(), rand_vec.end());
+
+          for(size_t i = 0; i < no_clusters; i++) {
+            std::cout << rand_vec[i] << std::endl;
+          }
           
           for(size_t i = 0; i < no_clusters; i++) {
             for (size_t j = 0; j < vectors_dim; j++) {
