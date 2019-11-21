@@ -80,11 +80,8 @@ namespace cluster {
           for(size_t i = 0; i < no_vectors; i++) {
             rand_vec[i] = i;
           }
+          
           std::random_shuffle(rand_vec.begin(), rand_vec.end());
-
-          for(size_t i = 0; i < no_clusters; i++) {
-            std::cout << rand_vec[i] << std::endl;
-          }
           
           for(size_t i = 0; i < no_clusters; i++) {
             for (size_t j = 0; j < vectors_dim; j++) {
@@ -109,7 +106,7 @@ namespace cluster {
       */
       template <typename T>
       std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
-      ParkJunInit(const std::vector<std::pair<T,T>>& dataset_curves,
+        ParkJunInit(const std::vector<std::pair<T,T>>& dataset_curves,
         const std::vector<int>& dataset_curves_lengths,
         const std::vector<int>& dataset_curves_offsets,
         const int& no_curves, const int& no_clusters) {
@@ -167,10 +164,10 @@ namespace cluster {
 
       template <typename T>
       std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
-      RandomInit(const std::vector<std::pair<T,T>>& dataset_curves,
-        const std::vector<int>& dataset_curves_lengths,
-        const std::vector<int>& dataset_curves_offsets,
-        const int& no_curves, const int& no_clusters) {
+        RandomInit(const std::vector<std::pair<T,T>>& dataset_curves,
+          const std::vector<int>& dataset_curves_lengths,
+          const std::vector<int>& dataset_curves_offsets,
+          const int& no_curves, const int& no_clusters) {
           
           std::vector<size_t> rand_vec(no_curves); 
           std::vector<std::pair<T,T>> centers;
@@ -179,17 +176,19 @@ namespace cluster {
           for(size_t i = 0; i < no_curves; i++) {
             rand_vec[i] = i;
           }
+          
           std::random_shuffle(rand_vec.begin(), rand_vec.end());
+
           int offset{};
           for(size_t i = 0; i < no_clusters; i++) {
-            size_t start = dataset_curves_offsets[i];
-            size_t end = start + dataset_curves_lengths[i];
+            size_t start = dataset_curves_offsets[rand_vec[i]];
+            size_t end = start + dataset_curves_lengths[rand_vec[i]];
             for(size_t j = start; j < end; j++) {
               centers.push_back(dataset_curves[j]);
             }
             centers_offsets[i] = offset;
-            centers_lengths[i] = dataset_curves_lengths[i];
-            offset += dataset_curves_lengths[i];
+            centers_lengths[i] = dataset_curves_lengths[rand_vec[i]];
+            offset += centers_lengths[i];
           }
           return std::make_tuple(centers,centers_lengths,centers_offsets);
       }

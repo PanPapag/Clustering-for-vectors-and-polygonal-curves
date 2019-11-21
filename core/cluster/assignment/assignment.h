@@ -44,10 +44,60 @@ namespace cluster {
             // Store to closest cluster
             d_array[assigned_cluster].push_back(i);
           }
+          return d_array;
         }
       }
+      /* Assignment Algorithms for curves */
       namespace curves {
-
+        template<typename T>
+        /** \brief Lloyd's Approach for Assignment: Each curve is assigned to 
+         * its closest cluster.
+         * Returns a 2D vector which holds the id of curves assigned to each cluster.
+         * We use DTW to calculate minimum distances. 
+        **/
+        std::vector<std::vector<size_t>> LloydsAssignment(const std::vector<std::pair<T,T>>& dataset_curves,
+          std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>& centers,
+          const std::vector<int>& dataset_curves_lengths, const std::vector<int>& dataset_curves_offsets,
+          const int& no_curves, const int& no_clusters) {
+            
+            // Declare 2D vector which holds all curves 
+            // to their assigned cluster
+            std::vector<std::vector<size_t>> d_array(no_clusters);
+            // Get lengths, offsets and points of curves
+            // Warning: DTW does not work without const&
+            const std::vector<std::pair<T,T>>& center_curves = std::get<0>(centers);
+            const std::vector<int>& center_lengths = std::get<1>(centers);
+            const std::vector<int>& center_offsets = std::get<2>(centers);
+            // Calculate all distances using DTW Distance
+            for (size_t i = 0; i < no_curves; i++) {
+              T min_dist{};
+              size_t assigned_cluster{};
+              for (size_t j = 0; j < no_clusters; j++) {
+                T dist = metric::DTWDistance<T> (
+                  std::next(dataset_curves.begin(),dataset_curves_offsets[i]),
+                  std::next(dataset_curves.begin(),
+                            dataset_curves_offsets[i] + dataset_curves_lengths[i]),
+                  std::next(center_curves.begin(),center_offsets[j]),
+                  std::next(center_curves.begin(),
+                            center_offsets[j] + center_lengths[j]));
+                  // Store minimum dist from clusters
+                  if (dist < min_dist || j==0) {
+                    min_dist = dist;
+                    assigned_cluster = j;
+                  }
+              }
+              // Store id to closest cluster
+              d_array[assigned_cluster].push_back(i);
+            }
+            for(auto& c:d_array) {
+              std::cout << "Cluster:" << std::endl;
+              for(auto& curve:c) {
+                std:: cout << curve << " ";
+              }
+              std::cout << std::endl;
+            }
+            return d_array;
+          }
       }
   }
 }
