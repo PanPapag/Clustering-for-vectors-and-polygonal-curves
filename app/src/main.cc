@@ -159,10 +159,6 @@ int main(int argc, char **argv) {
     */
     using namespace cluster::initialization::vectors;
     auto centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
-    for(auto& i:centers) {
-      std::cout << i << " "; 
-    }
-    std::cout << std::endl;
     
     using namespace cluster::assignment::vectors;
     auto clusters = LloydsAssignment(dataset_vectors,centers,input_info.N,input_info.D,input_info.K);
@@ -170,11 +166,6 @@ int main(int argc, char **argv) {
     using namespace cluster::update::vectors;
     auto new_centers = LloydsUpdate(dataset_vectors,centers,input_info.N,input_info.D,
                                     input_info.K,std::get<0>(clusters),std::get<1>(clusters));
-
-    for(auto& i:new_centers) {
-      std::cout << i << " "; 
-    }
-    std::cout << std::endl;
 
   } else if (clustering_object == "curves") {
     #define T double
@@ -229,15 +220,13 @@ int main(int argc, char **argv) {
     */
 
     /* TEST: Initializing curves centroids */
+    std::cout << "hi" << std::endl;
     using namespace cluster::initialization::curves;
     auto curves_centers = RandomInit(dataset_curves, dataset_curves_lengths,
                                       dataset_curves_offsets, input_info.N,
                                       input_info.K);
-    for(auto& i:curves_centers) {
-      std::cout << i << " "; 
-    }
-    std::cout << std::endl;
-  
+
+    std::cout << "hi" << std::endl;
     using namespace cluster::assignment::curves;
     auto clusters = LloydsAssignment(dataset_curves,curves_centers, dataset_curves_lengths,
                                 dataset_curves_offsets, input_info.N,
@@ -247,10 +236,6 @@ int main(int argc, char **argv) {
     auto new_centers = LloydsUpdate(dataset_curves,curves_centers, dataset_curves_lengths,
                                 dataset_curves_offsets, input_info.N,
                                 input_info.K, std::get<0>(clusters),std::get<1>(clusters));
-    for(auto& i:new_centers) {
-      std::cout << i << " "; 
-    }
-    std::cout << std::endl;
   }
 
   return EXIT_SUCCESS;

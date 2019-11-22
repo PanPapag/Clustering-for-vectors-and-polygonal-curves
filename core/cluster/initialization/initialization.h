@@ -21,10 +21,11 @@ namespace cluster {
             for i = 1,...,n
           (3) Return the k objects with k smallest vi values.
           Algorithm proposed in [Park-Jun’09]
-        @par[in] const std::vector<T>& dataset_vectors
-        @par[in] const int& no_vectors
-        @par[in] const int& vectors_dim
-        @par[in] const int& no_clusters
+        @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
+        @par[in] const int& no_vectors : number of vectors
+        @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
+                                          dimensionally equal)
+        @par[in] const int& no_clusters : number of clusters
       */
       template <typename T>
       std::vector<T> ParkJunInit(const std::vector<T>& dataset_vectors,
@@ -71,22 +72,38 @@ namespace cluster {
         return centroids;
       }
 
+      /** \brief Initilization of cluster centroids.
+        Details:
+          (1) Create a vector containing numbers in range 1-no_vectors.
+          (2) Suffle vector and keep the k - first cells.
+          (3) Match each number with vectors' offsets.
+          (4) Return selected vectors.  
+          @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
+          @par[in] const int& no_vectors : number of vectors
+          @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
+                                            dimensionally equal)
+          @par[in] const int& no_clusters : number of clusters
+      */
       template <typename T>
-      std::vector<size_t> RandomInit(const std::vector<T>& dataset_vectors,
+      std::vector<T> RandomInit(const std::vector<T>& dataset_vectors,
         const int& no_vectors, const int& vectors_dim, const int& no_clusters) {
           
+          // Create a vector with numbers in range(0,no_clusters)
           std::vector<size_t> rand_vec(no_vectors); 
           std::vector<T> centers(no_clusters * vectors_dim);
           for(size_t i = 0; i < no_vectors; i++) {
             rand_vec[i] = i;
           }
+          // Suffle vector
           std::random_shuffle(rand_vec.begin(), rand_vec.end());
-          std::vector<size_t> rand_centers(no_clusters);
-          for(size_t i = 0; i < no_clusters; i++) {
-            rand_centers[i] = rand_vec[i];
+          // Match offsets with vectors
+          for (size_t i = 0; i < no_clusters; ++i) {
+            for (size_t j = 0; j < vectors_dim; ++j) {
+              centers[i * vectors_dim + j] = dataset_vectors[rand_vec[i] * vectors_dim + j];
+            }
           }
-
-          return rand_centers;
+          // Return Initialized centers
+          return centers;
       }
 
     }
@@ -160,38 +177,48 @@ namespace cluster {
         return std::make_tuple(centroids,centroids_lengths,centroids_offsets);
       }
 
+      /** \brief Initilization of cluster centroids.
+        Details:
+          (1) Create a vector containing numbers in range 1-no_curves.
+          (2) Suffle vector and keep the k - first cells.
+          (3) Match each number with curves' offsets.
+          (4) Calculate curves' new offsets.
+          (4) Return centers as a tuple containg also their legths and offsets.  
+          @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
+          @par[in] const int& no_vectors : number of vectors
+          @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
+                                            dimensionally equal)
+          @par[in] const int& no_clusters : number of clusters
+      */
       template <typename T>
-      std::vector<size_t> RandomInit(const std::vector<std::pair<T,T>>& dataset_curves,
-        const std::vector<int>& dataset_curves_lengths,const std::vector<int>& dataset_curves_offsets,
+      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>> 
+      RandomInit(const std::vector<std::pair<T,T>>& dataset_curves,
+        const std::vector<int>& dataset_curves_lengths, 
+        const std::vector<int>& dataset_curves_offsets,
         const int& no_curves, const int& no_clusters) {
         
+        // Create a vector with numbers in range (0,no_clusters)
         std::vector<size_t> rand_vec(no_curves); 
-        std::vector<std::pair<T,T>> centers;
-        std::vector<int> centers_offsets(no_clusters);
-        std::vector<int> centers_lengths(no_clusters);
         for(size_t i = 0; i < no_curves; i++) {
           rand_vec[i] = i;
         }
-        
+        // Suffle vector
         std::random_shuffle(rand_vec.begin(), rand_vec.end());
-        std::vector<size_t> rand_centers(no_clusters);
-        for(size_t i = 0; i < no_clusters; i++) {
-          rand_centers[i] = rand_vec[i];
+        // Match ids with vectors
+        int offset{};
+        std::vector<std::pair<T,T>> centers;
+        std::vector<int> centers_offsets(no_clusters);
+        std::vector<int> centers_lengths(no_clusters);
+        for (size_t i = 0; i < no_clusters; ++i) {
+          centers_lengths[i] = dataset_curves_lengths[rand_vec[i]];
+          for (size_t j = 0; j < centers_lengths[i]; ++j) {
+            centers.push_back(dataset_curves[dataset_curves_offsets[rand_vec[i]] + j]);
+          }
+          centers_offsets[i] = offset;
+          offset += centers_lengths[i];
         }
-          
-          // int offset{};
-          // for(size_t i = 0; i < no_clusters; i++) {
-          //   size_t start = dataset_curves_offsets[rand_vec[i]];
-          //   size_t end = start + dataset_curves_lengths[rand_vec[i]];
-          //   for(size_t j = start; j < end; j++) {
-          //     centers.push_back(dataset_curves[j]);
-          //   }
-          //   centers_offsets[i] = offset;
-          //   centers_lengths[i] = dataset_curves_lengths[rand_vec[i]];
-          //   offset += centers_lengths[i];
-          // }
-        return rand_centers;
-          //return std::make_tuple(centers,centers_lengths,centers_offsets);
+        // Return Initialized centroids
+        return std::make_tuple(centers,centers_lengths,centers_offsets);
       }
     }
   }
