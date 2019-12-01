@@ -45,8 +45,9 @@ namespace utils {
         return: SUCCESS or FAIL
       */
       template <typename T, typename K>
-      int ReadFile(std::string &file_name, const int no_vectors, const int dim,
-        std::vector<T> &vectors, std::vector<K> &ids, utils::ExitCode &status) {
+      int ReadFile(const std::string &file_name, const int no_vectors,
+        const int dim, std::vector<T> &vectors, std::vector<K> &ids,
+        utils::ExitCode &status) {
         // Open file
         std::ifstream infile;
         infile.open(file_name);
@@ -67,6 +68,27 @@ namespace utils {
         }
         // close the file
         infile.close();
+        return SUCCESS;
+      }
+      /** \brief WriteFile - Output prorgam results to the given output file
+
+        return: SUCCESS or FAIL
+      */
+      template <typename T, typename U>
+      int WriteFile(const std::string &file_name, utils::ExitCode &status) {
+
+        // Open file
+        std::ofstream outfile;
+        outfile.open(file_name);
+        // Check if file is opened
+        if (outfile.is_open()) {
+
+        } else {
+          status = INVALID_OUTPUT;
+          return FAIL;
+        }
+        // close file
+        outfile.close();
         return SUCCESS;
       }
       /** \brief GetNoDatasetVectors - Get the number of vectors in the dataset

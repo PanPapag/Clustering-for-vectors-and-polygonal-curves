@@ -180,16 +180,15 @@ int main(int argc, char **argv) {
               << std::endl;
 
     /* Compute clusters running specified algorithm */
-    std::pair<std::vector<T>,std::vector<std::vector<size_t>>> clusters_res;
     start = high_resolution_clock::now();
     std::cout << "\nComputing clusters.." << std::endl;
-    clusters_res = cl.Predict();
+    auto clusters_res = cl.Predict();
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Computing clusters completed successfully." << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
-
+    std::cout << std::get<2>(clusters_res) << std::endl;
     /* Extract info */
     start = high_resolution_clock::now();
     std::cout << "\nExtracting cluster info.." << std::endl;

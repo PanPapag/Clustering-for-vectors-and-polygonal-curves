@@ -1,11 +1,15 @@
 #ifndef CLUSTERING
 #define CLUSTERING
 
+#include <chrono>
 #include <map>
+#include <tuple>
 
 #include "../initialization/initialization.h"
 #include "../assignment/assignment.h"
 #include "../update/update.h"
+
+using namespace std::chrono;
 
 namespace cluster {
   namespace vectors {
@@ -85,7 +89,10 @@ namespace cluster {
           which stores in each position the indexes of dataset_vectors assigned
           in this cluster
         */
-        std::pair<std::vector<T>,std::vector<std::vector<size_t>>> Predict(void) {
+        std::tuple<std::vector<T>,std::vector<std::vector<size_t>>,double>
+          Predict(void) {
+          /* Start time measuring */
+          auto start = high_resolution_clock::now();
           /* Declare types */
           std::vector<T> centroids;
           std::tuple<std::vector<std::vector<size_t>>,std::vector<T>> clusters;
@@ -102,7 +109,11 @@ namespace cluster {
                                  no_vectors, vectors_dim, no_clusters,
                                  std::get<0>(clusters), std::get<1>(clusters));
           }
-          return std::make_pair(centroids,std::get<0>(clusters));
+          /* End time measuring */
+          auto stop = high_resolution_clock::now();
+          duration <double> total_time = duration_cast<duration<double>>(stop - start);
+          // Return result in the form of a tuple
+          return std::make_tuple(centroids,std::get<0>(clusters),total_time.count());
         }
         /** \brief Map each vector index to the corresponding cluster
           @par[in] clusters - std::vector<std::vector<size_t>> returned by Predict

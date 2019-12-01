@@ -161,7 +161,7 @@ namespace metric {
   /* Implementation of Silhouette metric for vectors */
   namespace vectors {
     /** \brief Computes Silhouette metric
-      @par[in]
+      @par[in] TODO
       return : a pair of Silhouette value for each object and the
                average Silhouette value
     */
