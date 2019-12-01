@@ -103,9 +103,9 @@ namespace utils {
           } else if (init == "random") {
             outfile << "Initialization: Random | ";
           }
-          if (assign == "lloyds") {
+          if (assign == "lloyd") {
             outfile << "Assignment: Lloyd's Assignment | ";
-          } else if (assign == "lsh") {
+          } else if (assign == "range-lsh") {
             outfile << "Assignment: By Range LSH | ";
           }
           if (update == "pam") {
@@ -130,22 +130,29 @@ namespace utils {
           }
           /* Print total clustering time as well as the Silhouette metrics */
           outfile << "clustering_time: " << clustering_time << " seconds"
-                  <<std::endl;
+                  << std::endl;
           std::vector<double> s = std::get<0>(silhouette_res);
           double s_total = std::get<1>(silhouette_res);
-          outfile << "Silhouette of each vector: " << std::endl;
-          for (size_t i = 0; i < s.size(); ++i) {
-            outfile << ids[i] << ": " << s[i] << std::endl;
+          outfile << "Silhouette: {";
+          for (size_t i = 0; i < clusters.size(); ++i) {
+            outfile << "s" << i + 1 << ": " << s[i] << ", ";
           }
-          outfile << "Silhouette total: " << s_total << std::endl;
+          outfile << "stotal: " << s_total << "}"<< std::endl;
           /* If complete parameter was given print cluster explicitly */
           if (complete == true) {
             cl_idx = 0;
             for (const auto& cluster: clusters) {
-              outfile << "CLUSTER-" << cl_idx + 1 << std::endl;
+              outfile << "CLUSTER-" << cl_idx + 1 << " {";
+              bool first = true;
               for (const auto& object_idx: cluster) {
-                outfile << ids[object_idx] << std::endl;
+                if (first == true) {
+                  outfile << ids[object_idx];
+                  first = false;
+                } else {
+                  outfile <<  ", " << ids[object_idx];
+                }
               }
+              outfile << "}" << std::endl;
               cl_idx++;
             }
           }

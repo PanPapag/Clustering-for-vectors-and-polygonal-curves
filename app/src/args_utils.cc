@@ -40,6 +40,43 @@ int utils::args::ScanArguments(struct InputInfo &input_info,
     input_info.complete = true;
   }
 
+  do {
+    std::cout << "Do you want to declare algorithms to be used for clustering (y/n)? : ";
+    std::cin >> input_buffer;
+    if (input_buffer != "y" && input_buffer != "n") {
+      std::cout << "Wrong input! Try again." << std::endl;
+    }
+  } while (input_buffer != "y" && input_buffer != "n");
+
+  if (input_buffer != "n") {
+    do {
+      std::cout << "Provide initialization algorithm {k-means++,random}: ";
+      std::cin >> input_buffer;
+      if (input_buffer != "k-means++" && input_buffer != "random") {
+        std::cout << "Wrong input! Try again." << std::endl;
+      }
+    } while (input_buffer != "k-means++" && input_buffer != "random");
+    input_info.init = input_buffer;
+
+    do {
+      std::cout << "Provide assignment algorithm {lloyd,range-lsh}: ";
+      std::cin >> input_buffer;
+      if (input_buffer != "lloyd" && input_buffer != "range-lsh") {
+        std::cout << "Wrong input! Try again." << std::endl;
+      }
+    } while (input_buffer != "lloyd" && input_buffer != "range-lsh");
+    input_info.assign = input_buffer;
+
+    do {
+      std::cout << "Provide update algorithm {pam,mean}: ";
+      std::cin >> input_buffer;
+      if (input_buffer != "pam" && input_buffer != "mean") {
+        std::cout << "Wrong input! Try again." << std::endl;
+      }
+    } while (input_buffer != "pam" && input_buffer != "mean");
+    input_info.update = input_buffer;
+  }
+
   return SUCCESS;
 }
 
@@ -57,18 +94,21 @@ int utils::args::ReadArguments(int argc, char **argv,
     }
   }
 
-  const char * const short_opts = "i:c:o:a:";
+  const char * const short_opts = "i:c:o:0:1:2:3:";
   const option long_opts[] = {
            {"input", required_argument, nullptr, 'i'},
            {"config", required_argument, nullptr, 'c'},
            {"output", required_argument, nullptr, 'o'},
-           {"complete", optional_argument, nullptr, 'a'},
+           {"complete", no_argument, nullptr, 0},
+           {"init", required_argument, nullptr, 1},
+           {"assign", required_argument, nullptr, 2},
+           {"update", required_argument, nullptr, 3},
            {nullptr, no_argument, nullptr, 0}
    };
 
    while (true) {
 
-     const auto opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
+     const auto opt = getopt_long(argc, argv, short_opts, long_opts, NULL);
 
      if (-1 == opt) {
        break;
@@ -83,12 +123,24 @@ int utils::args::ReadArguments(int argc, char **argv,
         input_info.config_file = optarg;
         break;
       }
-      case 'a': {
+      case 'o': {
+        input_info.output_file = optarg;
+        break;
+      }
+      case 0: {
         input_info.complete = true;
         break;
       }
-      case 'o': {
-        input_info.output_file = optarg;
+      case 1: {
+        input_info.init = optarg;
+        break;
+      }
+      case 2: {
+        input_info.assign = optarg;
+        break;
+      }
+      case 3: {
+        input_info.update = optarg;
         break;
       }
       case '?':

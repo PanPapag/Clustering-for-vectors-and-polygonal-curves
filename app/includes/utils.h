@@ -36,7 +36,12 @@ namespace utils {
     uint32_t N;                  // number of dataset points
     uint16_t D;                  // dimension of dataset points
     bool complete = false;       // flag to ouput each cluster analytically or not
-    void Print(const std::string);     
+    /* Set default string names of clustering step algortithms */
+    std::string init = "k-means++";
+    std::string assign = "lloyd";
+    std::string update = "mean"; 
+    /* Print method of struct InputInfo */
+    void Print(const std::string);
   };
   /** \brief ShowUsage - Prints the usage of the program
     @par const std::string &name - Pass by reference the name of the program

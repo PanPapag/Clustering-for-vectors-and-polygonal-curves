@@ -167,8 +167,8 @@ namespace metric {
       @par[in] clusters - vector of vectors where each dataset_vector is assigned
       @par[in] centroids - centroids coordinates stored in 1D vector
       @par[in] mapped_vectors - each vector is mapped to a cluster index
-      return : a pair of Silhouette value for each object and the
-               average Silhouette value
+      return : a pair of average s(p) of points in cluster i and
+        stotal = average s(p) of points in dataset
     */
     template <typename T>
     std::pair<std::vector<double>,double> Silhouette(
@@ -192,9 +192,7 @@ namespace metric {
         // for every centroid compute manhattan distance to each other centroid
         for (size_t j = 0; j < clusters.size(); ++j) {
           // skip itself
-          if (i == j) {
-            continue;
-          }
+          if (i == j) continue;
           T dist = ManhattanDistance<T>(
             std::next(centroids.begin(), i * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim),
@@ -214,9 +212,7 @@ namespace metric {
         T a_total_dist{};
         for (const auto& i: cluster_vectors) {
           // skip itself
-          if (i == it->first) {
-            continue;
-          }
+          if (i == it->first) continue;
           a_total_dist += ManhattanDistance<T>(
             std::next(dataset_vectors.begin(), it->first * vectors_dim),
             std::next(dataset_vectors.begin(), i * vectors_dim),
@@ -241,14 +237,26 @@ namespace metric {
       for (size_t i = 0; i < s.size(); ++i) {
         s[i] = (b[i] - a[i]) / utils::max(a[i],b[i]);
       }
-      /* Compute average Silhouette */
-      double s_total{};
-      for (size_t i = 0; i < s.size(); ++i) {
-        s_total += s[i];
+      /* Compute average s(p) of points in cluster i */
+      std::vector<double> s_avg(clusters.size());
+      for (size_t i = 0; i < clusters.size(); ++i) {
+        int counter = 0;
+        for (auto it = mapped_vectors.cbegin(); it != mapped_vectors.cend(); ++it) {
+          if (it->second == i) {
+            counter++;
+            s_avg[i] += s[it->first];
+          }
+        }
+        s_avg[i] /= counter;
       }
-      double s_avg = s_total / s.size();
-      // return results
-      return std::make_pair(s,s_avg);
+      /* Compute stotal = average s(p) of points in dataset */
+      double s_total{};
+      for (size_t i = 0; i < clusters.size(); ++i) {
+        s_total += s_avg[i];
+      }
+      s_total /= clusters.size();
+      // Return result as pair
+      return std::make_pair(s_avg,s_total);
     }
   }
   /* Implementation of Silhouette metric for curves */

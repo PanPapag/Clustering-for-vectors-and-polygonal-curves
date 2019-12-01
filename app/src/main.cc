@@ -23,6 +23,9 @@
 
 using namespace std::chrono;
 
+#define MAX_ITER 100
+#define T double
+
 int main(int argc, char **argv) {
   utils::InputInfo input_info;
   utils::ExitCode status;
@@ -92,7 +95,6 @@ int main(int argc, char **argv) {
             << std::endl;
 
   if (clustering_object == "vectors") {
-    #define T double
     #define U std::string
     /**
      Preprocessing input file to get number of dataset vectors
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
     start = high_resolution_clock::now();
     std::cout << "\nGetting number of dataset vectors.." << std::endl;
     exit_code = utils::io::vectors::GetNoDataVectors(input_info.input_file,
-                                                        input_info.N, status);
+                                                     input_info.N, status);
     if (exit_code != utils::SUCCESS) {
       utils::report::ReportError(status);
     }
@@ -158,7 +160,8 @@ int main(int argc, char **argv) {
      */
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::vectors::Cluster<T> cl{input_info.K, 5, "random", "lloyds", "pam"};
+    cluster::vectors::Cluster<T> cl{input_info.K, MAX_ITER, input_info.init,
+                                    input_info.assign, input_info.update};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;
@@ -218,8 +221,9 @@ int main(int argc, char **argv) {
     start = high_resolution_clock::now();
     std::cout << "\nWriting results to the output file.." << std::endl;
     exit_code = utils::io::vectors::WriteFile<T,U>(input_info.output_file,
-      "k-means++", "lloyds", "pam", clusters_res, silhouette_res,
-      input_info.complete, dataset_vectors_ids, input_info.D, status);
+      input_info.init, input_info.assign, input_info.update, clusters_res,
+      silhouette_res, input_info.complete, dataset_vectors_ids, input_info.D,
+      status);
     if (exit_code != utils::SUCCESS) {
       utils::report::ReportError(status);
     }
@@ -231,7 +235,6 @@ int main(int argc, char **argv) {
               << std::endl;
 
   } else if (clustering_object == "curves") {
-    #define T double
     #define U int
     /* Preprocessing input file to get number of dataset curves */
     start = high_resolution_clock::now();
@@ -279,7 +282,8 @@ int main(int argc, char **argv) {
 
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::curves::Cluster<T> cl{input_info.K, 2, "k-means++", "lloyds", "pam"};
+    cluster::curves::Cluster<T> cl{input_info.K, MAX_ITER, input_info.init,
+                                   input_info.assign, input_info.update};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;
@@ -300,7 +304,7 @@ int main(int argc, char **argv) {
     std::cout << "Fitting dataset completed successfully." << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
-    
+
     /* Compute clusters running specified algorithm */
     start = high_resolution_clock::now();
     std::cout << "\nComputing clusters.." << std::endl;
