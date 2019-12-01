@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
      */
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::vectors::Cluster<T> cl{input_info.K, 100, "k-means++", "lloyds", "pam"};
+    cluster::vectors::Cluster<T> cl{input_info.K, 5, "random", "lloyds", "pam"};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;

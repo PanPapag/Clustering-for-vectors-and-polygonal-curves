@@ -97,6 +97,7 @@ namespace cluster {
           std::vector<T> centroids;
           std::tuple<std::vector<std::vector<size_t>>,std::vector<T>> clusters;
           /* At first initialize centroids */
+          std::cout << no_clusters << std::endl;
           centroids = p_init(dataset_vectors, no_vectors, vectors_dim,
                              no_clusters);
           /* Calculate clusters and update centroids max_iter times */
@@ -104,6 +105,7 @@ namespace cluster {
             /* Assigment step */
             clusters = p_assign(dataset_vectors, centroids, no_vectors,
                                 vectors_dim, no_clusters);
+          
             /* Update step */
             centroids = p_update(dataset_vectors, centroids,
                                  no_vectors, vectors_dim, no_clusters,

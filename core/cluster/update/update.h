@@ -22,7 +22,7 @@ namespace cluster {
 
         // Declare 1D vector which holds new best center
         std::vector<size_t> new_centers_offsets(no_clusters);
-        std::vector<T> new_centers(no_clusters*no_vectors);
+        std::vector<T> new_centers(no_clusters*vectors_dim);
         for (size_t i = 0; i < no_clusters; i++) {
           for (auto& selected_center : clusters[i]) {
             T cost{};
@@ -40,6 +40,14 @@ namespace cluster {
             }
           }
         }
+        // std::cout << "New offsets:" << std::endl;
+        // for(auto& l:new_centers_offsets) {
+        //   std:: cout << l << " ";
+        // }
+        // for(auto& c:new_centers_offsets) {
+        //   std:: cout << l << " ";
+        // }
+        // std::cout << std::endl;
         for (size_t i = 0; i < no_clusters; ++i) {
           for (size_t j = 0; j < vectors_dim; ++j) {
             new_centers[i * vectors_dim + j] = dataset_vectors[new_centers_offsets[i] * vectors_dim + j];
