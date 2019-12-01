@@ -161,7 +161,12 @@ namespace metric {
   /* Implementation of Silhouette metric for vectors */
   namespace vectors {
     /** \brief Computes Silhouette metric
-      @par[in] TODO
+      @par[in] dataset_vectors - dataset vectors coordinates
+      @par[in] no_vectors - total number of vectors in the dataset
+      @par[in] vectors_dim - vectors dimension
+      @par[in] clusters - vector of vectors where each dataset_vector is assigned
+      @par[in] centroids - centroids coordinates stored in 1D vector
+      @par[in] mapped_vectors - each vector is mapped to a cluster index
       return : a pair of Silhouette value for each object and the
                average Silhouette value
     */

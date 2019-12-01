@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
 
-    /*
+    /**
       Read dataset and create 1D vector which represents the d-dimensional
       vectors of N vectors. Also create 1D vector that stores vectors' ids.
       1D vector of points representation support cache efficiency and as a result
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
     std::cout << "Computing clusters completed successfully." << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
-    std::cout << std::get<2>(clusters_res) << std::endl;
+
     /* Extract info */
     start = high_resolution_clock::now();
     std::cout << "\nExtracting cluster info.." << std::endl;
@@ -217,10 +217,12 @@ int main(int argc, char **argv) {
     /* Writing results to the output file */
     start = high_resolution_clock::now();
     std::cout << "\nWriting results to the output file.." << std::endl;
-
-    /*if (exit_code != utils::SUCCESS) {
+    exit_code = utils::io::vectors::WriteFile<T,U>(input_info.output_file,
+      "k-means++", "lloyds", "pam", clusters_res, silhouette_res,
+      input_info.complete, dataset_vectors_ids, input_info.D, status);
+    if (exit_code != utils::SUCCESS) {
       utils::report::ReportError(status);
-    } */
+    }
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Writing results to the output file completed successfully."
@@ -246,7 +248,7 @@ int main(int argc, char **argv) {
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
 
-    /*
+    /**
       Read dataset and create 1D vector of pairs which stores sequentially each
       curve of lenth m_i. Also create 1D vector that stores curves' ids and
       curves' length. 1D vector of curves representation support cache
