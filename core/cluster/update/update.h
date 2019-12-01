@@ -7,20 +7,19 @@
 #include "../../../core/metric/metric.h"
 #include "../../../core/utils/utils.h"
 
-#endif
-
 namespace cluster {
   namespace update {
     /* Update Algorithms for vectors */
-    namespace vectors {  
-      /** \brief Lloyd's Approach for Update:  
+    namespace vectors {
+      /**
+        \brief Lloyd's Approach for Update
       **/
       template <typename T>
-      std::vector<T> LloydsUpdate (const std::vector<T>& dataset_vectors, 
-        const std::vector<T>& centers, const int& no_vectors, const int& vectors_dim, 
-        const int& no_clusters, const std::vector<std::vector<size_t>>& clusters, 
+      std::vector<T> LloydsUpdate (const std::vector<T>& dataset_vectors,
+        const std::vector<T>& centers, const int& no_vectors, const int& vectors_dim,
+        const int& no_clusters, const std::vector<std::vector<size_t>>& clusters,
         std::vector<T>& costs) {
-          
+
         // Declare 1D vector which holds new best center
         std::vector<size_t> new_centers_offsets(no_clusters);
         std::vector<T> new_centers(no_clusters*no_vectors);
@@ -51,25 +50,26 @@ namespace cluster {
     }
     /* Update Algorithms for curves */
     namespace curves {
-      template<typename T>
-      /** \brief Lloyd's Approach for Update: 
+      /**
+        \brief Lloyd's Approach for Update
       **/
-      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>> 
+      template <typename T>
+      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
         LloydsUpdate (const std::vector<std::pair<T,T>>& dataset_curves,
-          std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>& centers, 
-          const std::vector<int>& dataset_curves_lengths, 
-          const std::vector<int>& dataset_curves_offsets, 
-          const int& no_curves, const int& no_clusters, 
-          const std::vector<std::vector<size_t>>& clusters, 
+          std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>& centers,
+          const std::vector<int>& dataset_curves_lengths,
+          const std::vector<int>& dataset_curves_offsets,
+          const int& no_curves, const int& no_clusters,
+          const std::vector<std::vector<size_t>>& clusters,
           std::vector<T>& costs) {
-              
-          // Declare 2D vector which holds all curves 
+
+          // Declare 2D vector which holds all curves
           // to their assigned cluster
           std::vector<size_t> offsets(no_clusters);
           // Calculate all distances using DTW Distance
           T total_cost{};
           for (size_t i = 0; i < no_clusters; i++) {
-            for (auto& center : clusters[i]) { 
+            for (auto& center : clusters[i]) {
               T cost{};
               for (auto& id : clusters[i]) {
                 if (id == center) continue;
@@ -89,7 +89,7 @@ namespace cluster {
               }
             }
           }
-          
+
           int off{};
           std::vector<std::pair<T,T>> new_centers;
           std::vector<int> new_centers_offsets(no_clusters);
@@ -107,3 +107,5 @@ namespace cluster {
     }
   }
 }
+
+#endif

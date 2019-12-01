@@ -49,7 +49,8 @@ namespace search {
         std::vector<hash::AmplifiedHashFunction<T>> hash_functions;
         std::vector<std::unordered_map<int,std::vector<int>>> hash_tables;
       public:
-        /** \brief class LSH constructor
+        /**
+          \brief class LSH constructor
         */
         LSH(const uint8_t K, const uint8_t L, const uint16_t D,
             const uint32_t N, const double r, const std::vector<T>& points,
@@ -264,7 +265,7 @@ namespace search {
             //auto const& fv_offset:bucket[0];
             for (auto const& fv_offset: bucket) {
               int of = fv_offset % input_curves_offsets.size(); //fv_offset % input_curves_offsets.size();
-              //std::cout << fv_offset << std::endl; 
+              //std::cout << fv_offset << std::endl;
               T dist =  metric::DTWDistance<T> (
                 std::next(input_curves.begin(),input_curves_offsets[of]),
                 std::next(input_curves.begin(),

@@ -9,8 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "../../core/cluster/initialization/initialization.h"
 #include "../../core/cluster/assignment/assignment.h"
+#include "../../core/cluster/initialization/initialization.h"
+#include "../../core/cluster/clustering/clustering.h"
 #include "../../core/cluster/update/update.h"
 #include "../../core/metric/metric.h"
 #include "../../core/utils/utils.h"
@@ -89,7 +90,7 @@ int main(int argc, char **argv) {
   std::cout << "Reading configuration file completed successfully." << std::endl;
   std::cout << "Time elapsed: " << total_time.count() << " seconds"
             << std::endl;
-  
+
   std::srand(std::time(0));
 
   if (clustering_object == "vectors") {
@@ -154,18 +155,45 @@ int main(int argc, char **argv) {
     input_info.Print(clustering_object);
 
     /**
+      Create a clustering object to perform dataset clustering using a
+      specific algorithm, specified by init, assign and update string paramters
+     */
+    start = high_resolution_clock::now();
+    std::cout << "\nBuilding Cluster class.." << std::endl;
+    cluster::vectors::Cluster<T> cluster{input_info.K, 100, "k-means++",
+                                         "lloyds", "pam"};
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Building Cluster class completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    cluster.Fit(dataset_vectors, input_info.N, input_info.K);
+    auto res = cluster.Predict();
+    int i = 0;
+    for (auto tv: res) {
+      std::cout << "Cluster: " << i << std::endl;
+      for (size_t j = 0; j <tv.size(); ++j) {
+        std::cout << tv[j] << std::endl;
+      }
+      i++;
+    }
+    /**
       Τest space - NOTE whichever test we operate, delete it before commit
       to master branch in order to avoid conflicts
     */
+
+    /*
     using namespace cluster::initialization::vectors;
     auto centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
-    
+
     using namespace cluster::assignment::vectors;
     auto clusters = LloydsAssignment(dataset_vectors,centers,input_info.N,input_info.D,input_info.K);
 
     using namespace cluster::update::vectors;
     auto new_centers = LloydsUpdate(dataset_vectors,centers,input_info.N,input_info.D,
                                     input_info.K,std::get<0>(clusters),std::get<1>(clusters));
+    */
 
   } else if (clustering_object == "curves") {
     #define T double
@@ -219,23 +247,22 @@ int main(int argc, char **argv) {
       to master branch in order to avoid conflicts
     */
 
-    /* TEST: Initializing curves centroids */
-    std::cout << "hi" << std::endl;
+    /*
     using namespace cluster::initialization::curves;
     auto curves_centers = RandomInit(dataset_curves, dataset_curves_lengths,
                                       dataset_curves_offsets, input_info.N,
                                       input_info.K);
 
-    std::cout << "hi" << std::endl;
     using namespace cluster::assignment::curves;
     auto clusters = LloydsAssignment(dataset_curves,curves_centers, dataset_curves_lengths,
                                 dataset_curves_offsets, input_info.N,
                                 input_info.K);
-    
+
     using namespace cluster::update::curves;
     auto new_centers = LloydsUpdate(dataset_curves,curves_centers, dataset_curves_lengths,
                                 dataset_curves_offsets, input_info.N,
                                 input_info.K, std::get<0>(clusters),std::get<1>(clusters));
+    */
   }
 
   return EXIT_SUCCESS;

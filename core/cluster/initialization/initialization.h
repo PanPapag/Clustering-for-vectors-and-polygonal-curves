@@ -21,7 +21,7 @@ namespace cluster {
             for i = 1,...,n
           (3) Return the k objects with k smallest vi values.
           Algorithm proposed in [Park-Jun’09]
-        @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
+        @par[in] const std::vector<T>& dataset_vectors : vectors given from dataset
         @par[in] const int& no_vectors : number of vectors
         @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
                                           dimensionally equal)
@@ -77,7 +77,7 @@ namespace cluster {
           (1) Create a vector containing numbers in range 1-no_vectors.
           (2) Suffle vector and keep the k - first cells.
           (3) Match each number with vectors' offsets.
-          (4) Return selected vectors.  
+          (4) Return selected vectors.
           @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
           @par[in] const int& no_vectors : number of vectors
           @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
@@ -87,9 +87,9 @@ namespace cluster {
       template <typename T>
       std::vector<T> RandomInit(const std::vector<T>& dataset_vectors,
         const int& no_vectors, const int& vectors_dim, const int& no_clusters) {
-          
+
           // Create a vector with numbers in range(0,no_clusters)
-          std::vector<size_t> rand_vec(no_vectors); 
+          std::vector<size_t> rand_vec(no_vectors);
           std::vector<T> centers(no_clusters * vectors_dim);
           for(size_t i = 0; i < no_vectors; i++) {
             rand_vec[i] = i;
@@ -160,7 +160,7 @@ namespace cluster {
 
         // Find indices of no_clusters smallest v_array values
         std::vector<int> idx = utils::ArgMin<T>(v, no_clusters);
-        // Initialize curves centroids 
+        // Initialize curves centroids
         std::vector<std::pair<T,T>> centroids;
         std::vector<int> centroids_lengths(no_clusters);
         std::vector<int> centroids_offsets(no_clusters);
@@ -183,7 +183,7 @@ namespace cluster {
           (2) Suffle vector and keep the k - first cells.
           (3) Match each number with curves' offsets.
           (4) Calculate curves' new offsets.
-          (4) Return centers as a tuple containg also their legths and offsets.  
+          (4) Return centers as a tuple containg also their legths and offsets.
           @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
           @par[in] const int& no_vectors : number of vectors
           @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
@@ -191,14 +191,14 @@ namespace cluster {
           @par[in] const int& no_clusters : number of clusters
       */
       template <typename T>
-      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>> 
+      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
       RandomInit(const std::vector<std::pair<T,T>>& dataset_curves,
-        const std::vector<int>& dataset_curves_lengths, 
+        const std::vector<int>& dataset_curves_lengths,
         const std::vector<int>& dataset_curves_offsets,
         const int& no_curves, const int& no_clusters) {
-        
+
         // Create a vector with numbers in range (0,no_clusters)
-        std::vector<size_t> rand_vec(no_curves); 
+        std::vector<size_t> rand_vec(no_curves);
         for(size_t i = 0; i < no_curves; i++) {
           rand_vec[i] = i;
         }
