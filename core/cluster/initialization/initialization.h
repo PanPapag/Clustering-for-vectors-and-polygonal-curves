@@ -95,6 +95,7 @@ namespace cluster {
             rand_vec[i] = i;
           }
           // Suffle vector
+          std::srand(std::time(0));
           std::random_shuffle(rand_vec.begin(), rand_vec.end());
           // Match offsets with vectors
           for (size_t i = 0; i < no_clusters; ++i) {
@@ -203,6 +204,7 @@ namespace cluster {
           rand_vec[i] = i;
         }
         // Suffle vector
+        std::srand(std::time(0));
         std::random_shuffle(rand_vec.begin(), rand_vec.end());
         // Match ids with vectors
         int offset{};

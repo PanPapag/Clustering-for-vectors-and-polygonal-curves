@@ -91,8 +91,6 @@ int main(int argc, char **argv) {
   std::cout << "Time elapsed: " << total_time.count() << " seconds"
             << std::endl;
 
-  std::srand(std::time(0));
-
   if (clustering_object == "vectors") {
     #define T double
     #define U std::string
@@ -160,40 +158,46 @@ int main(int argc, char **argv) {
      */
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::vectors::Cluster<T> cluster{input_info.K, 100, "k-means++",
-                                         "lloyds", "pam"};
+    cluster::vectors::Cluster<T> cl{input_info.K, 100, "k-means++", "lloyds", "pam"};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
 
-    cluster.Fit(dataset_vectors, input_info.N, input_info.K);
-    auto res = cluster.Predict();
-    int i = 0;
+    /**
+      Fit dataset into the Cluster class
+      Note: In case of range LSH assignment, fitting may take more time as
+      LSH structures will be constructed
+    */
+    start = high_resolution_clock::now();
+    std::cout << "\nFitting dataset.." << std::endl;
+    cl.Fit(dataset_vectors, input_info.N, input_info.K);
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Fitting dataset completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    /* Compute clusters running specified algorithm */
+    std::pair<std::vector<T>,std::vector<std::vector<size_t>>> clusters_res;
+    start = high_resolution_clock::now();
+    std::cout << "\nComputing clusters.." << std::endl;
+    clusters_res = cl.Predict();
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Computing clusters completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    /*int i = 0;
     for (auto tv: res) {
       std::cout << "Cluster: " << i << std::endl;
       for (size_t j = 0; j <tv.size(); ++j) {
         std::cout << tv[j] << std::endl;
       }
       i++;
-    }
-    /**
-      Τest space - NOTE whichever test we operate, delete it before commit
-      to master branch in order to avoid conflicts
-    */
-
-    /*
-    using namespace cluster::initialization::vectors;
-    auto centers = RandomInit(dataset_vectors,input_info.N,input_info.D,input_info.K);
-
-    using namespace cluster::assignment::vectors;
-    auto clusters = LloydsAssignment(dataset_vectors,centers,input_info.N,input_info.D,input_info.K);
-
-    using namespace cluster::update::vectors;
-    auto new_centers = LloydsUpdate(dataset_vectors,centers,input_info.N,input_info.D,
-                                    input_info.K,std::get<0>(clusters),std::get<1>(clusters));
-    */
+    } */
 
   } else if (clustering_object == "curves") {
     #define T double

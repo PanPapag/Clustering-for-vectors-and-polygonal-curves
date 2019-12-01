@@ -79,11 +79,14 @@ namespace cluster {
         }
         /**
           \brief Predict the closest cluster each sample in dataset belongs to
+          returns a vector of centroids coordinates and a vector of vectors
+          which stores in each position the indexes of dataset_vectors assigned
+          in this cluster
         */
-        std::vector<std::vector<size_t>> Predict(void) {
+        std::pair<std::vector<T>,std::vector<std::vector<size_t>>> Predict(void) {
           /* Declare types */
           std::vector<T> centroids;
-          std::tuple<std::vector<std::vector<size_t>>, std::vector<T>> clusters;
+          std::tuple<std::vector<std::vector<size_t>>,std::vector<T>> clusters;
           /* At first initialize centroids */
           centroids = p_init(dataset_vectors, no_vectors, vectors_dim,
                              no_clusters);
@@ -93,12 +96,11 @@ namespace cluster {
             clusters = p_assign(dataset_vectors, centroids, no_vectors,
                                 vectors_dim, no_clusters);
             /* Update step */
-            centroids = p_update(dataset_vectors, centroids, no_vectors,
-                                     vectors_dim, no_clusters,
-                                     std::get<0>(clusters),
-                                     std::get<1>(clusters));
+            centroids = p_update(dataset_vectors, centroids,
+                                 no_vectors, vectors_dim, no_clusters,
+                                 std::get<0>(clusters), std::get<1>(clusters));
           }
-          return std::get<0>(clusters);
+          return std::make_pair(centroids,std::get<0>(clusters));
         }
     };
   }
