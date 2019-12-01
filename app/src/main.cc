@@ -275,6 +275,52 @@ int main(int argc, char **argv) {
     /* Print info */
     input_info.Print(clustering_object);
 
+    start = high_resolution_clock::now();
+    std::cout << "\nBuilding Cluster class.." << std::endl;
+    cluster::curves::Cluster<T> cl{input_info.K, 2, "k-means++", "lloyds", "pam"};
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Building Cluster class completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    /**
+      Fit dataset into the Cluster class
+      Note: In case of range LSH assignment, fitting may take more time as
+      LSH structures will be constructed
+    */
+    start = high_resolution_clock::now();
+    std::cout << "\nFitting dataset.." << std::endl;
+    cl.Fit(dataset_curves, dataset_curves_lengths,
+            dataset_curves_offsets, input_info.N);
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Fitting dataset completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+    
+    /* Compute clusters running specified algorithm */
+    start = high_resolution_clock::now();
+    std::cout << "\nComputing clusters.." << std::endl;
+    auto clusters_res = cl.Predict();
+    stop = high_resolution_clock::now();
+    // total_time = duration_cast<duration<double>>(stop - start);
+    // std::cout << "Computing clusters completed successfully." << std::endl;
+    // std::cout << "Time elapsed: " << total_time.count() << " seconds"
+    //           << std::endl;
+    // std::cout << std::get<2>(clusters_res) << std::endl;
+    // /* Extract info */
+    // start = high_resolution_clock::now();
+    // std::cout << "\nExtracting cluster info.." << std::endl;
+    // std::vector<T> centroids = std::get<0>(clusters_res);
+    // std::vector<std::vector<size_t>> clusters = std::get<1>(clusters_res);
+    // std::map<int,int> mapped_vectors = cl.MapToClusters(clusters);
+    // stop = high_resolution_clock::now();
+    // total_time = duration_cast<duration<double>>(stop - start);
+    // std::cout << "Extracting cluster info completed successfully." << std::endl;
+    // std::cout << "Time elapsed: " << total_time.count() << " seconds"
+    //           << std::endl;
+
     /**
       Τest space - NOTE whichever test we operate, delete it before commit
       to master branch in order to avoid conflicts
@@ -297,6 +343,5 @@ int main(int argc, char **argv) {
                                 input_info.K, std::get<0>(clusters),std::get<1>(clusters));
     */
   }
-
   return EXIT_SUCCESS;
 }

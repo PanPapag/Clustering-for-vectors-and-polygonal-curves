@@ -58,7 +58,7 @@ namespace cluster {
         template <typename T>
         std::tuple<std::vector<std::vector<size_t>>, std::vector<T>>
           LloydsAssignment (const std::vector<std::pair<T,T>>& dataset_curves,
-            std::tuple<std::vector<std::pair<T,T>>, std::vector<int>,
+            std::tuple<std::vector<std::pair<T,T>>, std::vector<int>, 
             std::vector<int>>& centers,
             const std::vector<int>& dataset_curves_lengths,
             const std::vector<int>& dataset_curves_offsets,
