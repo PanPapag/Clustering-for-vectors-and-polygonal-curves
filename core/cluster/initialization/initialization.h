@@ -1,8 +1,9 @@
 #ifndef INITIALIZATION
 #define INITIALIZATION
 
-#include <tuple>
 #include <algorithm>
+#include <tuple>
+#include <random>
 
 #include "../../../core/metric/metric.h"
 #include "../../../core/utils/utils.h"

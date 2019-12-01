@@ -190,14 +190,44 @@ int main(int argc, char **argv) {
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
 
-    /*int i = 0;
-    for (auto tv: res) {
-      std::cout << "Cluster: " << i << std::endl;
-      for (size_t j = 0; j <tv.size(); ++j) {
-        std::cout << tv[j] << std::endl;
-      }
-      i++;
+    /* Extract info */
+    start = high_resolution_clock::now();
+    std::cout << "\nExtracting cluster info.." << std::endl;
+    std::vector<T> centroids = std::get<0>(clusters_res);
+    std::vector<std::vector<size_t>> clusters = std::get<1>(clusters_res);
+    std::map<int,int> mapped_vectors = cl.MapToClusters(clusters);
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Extracting cluster info completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    /* Compute Silhouette */
+    std::pair<std::vector<double>,double> silhouette_res;
+    start = high_resolution_clock::now();
+    std::cout << "\nComputing Silhouette.." << std::endl;
+    silhouette_res = metric::vectors::Silhouette<T>(dataset_vectors, input_info.N,
+                                                    input_info.D, clusters,
+                                                    centroids, mapped_vectors);
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Computing Silhouette completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    /* Writing results to the output file */
+    start = high_resolution_clock::now();
+    std::cout << "\nWriting results to the output file.." << std::endl;
+
+    /*if (exit_code != utils::SUCCESS) {
+      utils::report::ReportError(status);
     } */
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Writing results to the output file completed successfully."
+              << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
 
   } else if (clustering_object == "curves") {
     #define T double

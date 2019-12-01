@@ -1,9 +1,12 @@
 #ifndef METRIC
 #define METRIC
 
-#include <utility>
 #include <cmath>
+#include <iterator>
+#include <map>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "../utils/utils.h"
 
@@ -155,6 +158,99 @@ namespace metric {
     // return result as tuple of max Af, average Af and total #queries failed
     return std::make_tuple(max_af,avg_af,cnt_not_found);
   }
+  /* Implementation of Silhouette metric for vectors */
+  namespace vectors {
+    /** \brief Computes Silhouette metric
+      @par[in]
+      return : a pair of Silhouette value for each object and the
+               average Silhouette value
+    */
+    template <typename T>
+    std::pair<std::vector<double>,double> Silhouette(
+      const std::vector<T>& dataset_vectors,
+      const int& no_vectors, const int& vectors_dim,
+      const std::vector<std::vector<size_t>>& clusters,
+      const std::vector<T>& centroids,
+      const std::map<int,int>& mapped_vectors) {
+      /*  s(i) = (b(i) − a(i)) / max{a(i), b(i)}  */
+      std::vector<double> s(no_vectors);
+      std::vector<double> a(no_vectors);
+      std::vector<double> b(no_vectors);
+      /*
+        Precompute closest centroid to each other centroid using
+        manhattan distance
+      */
+      std::map<int,int> closest_centroid;
+      for (size_t i = 0; i < clusters.size(); ++i) {
+        T min_dist = std::numeric_limits<T>::max();
+        int min_id;
+        // for every centroid compute manhattan distance to each other centroid
+        for (size_t j = 0; j < clusters.size(); ++j) {
+          // skip itself
+          if (i == j) {
+            continue;
+          }
+          T dist = ManhattanDistance<T>(
+            std::next(centroids.begin(), i * vectors_dim),
+            std::next(centroids.begin(), j * vectors_dim),
+            std::next(centroids.begin(), j * vectors_dim + vectors_dim));
+          // Pick this one with the minimum manhattan distance
+          if (dist < min_dist) {
+            min_dist = dist;
+            min_id = j;
+          }
+        }
+        closest_centroid[i] = min_id;
+      }
+      /* Iterate over every vector to compute its a_i value */
+      for (auto it = mapped_vectors.cbegin(); it != mapped_vectors.cend(); ++it) {
+        /* Get all vectors' indexes in the same cluster */
+        std::vector<size_t> cluster_vectors = clusters[it->second];
+        T a_total_dist{};
+        for (const auto& i: cluster_vectors) {
+          // skip itself
+          if (i == it->first) {
+            continue;
+          }
+          a_total_dist += ManhattanDistance<T>(
+            std::next(dataset_vectors.begin(), it->first * vectors_dim),
+            std::next(dataset_vectors.begin(), i * vectors_dim),
+            std::next(dataset_vectors.begin(), i * vectors_dim + vectors_dim));
+        }
+        a[it->first] = (double) a_total_dist / (cluster_vectors.size() - 1);
+      }
+      /* Iterate over every vector to compute its b_i value */
+      for (auto it = mapped_vectors.cbegin(); it != mapped_vectors.cend(); ++it) {
+        /* Get all vectors' indexes in the closest centroid cluster */
+        std::vector<size_t> cluster_vectors = clusters[closest_centroid[it->second]];
+        T b_total_dist{};
+        for (const auto& i: cluster_vectors) {
+          b_total_dist += ManhattanDistance<T>(
+            std::next(dataset_vectors.begin(), it->first * vectors_dim),
+            std::next(dataset_vectors.begin(), i * vectors_dim),
+            std::next(dataset_vectors.begin(), i * vectors_dim + vectors_dim));
+        }
+        b[it->first] = (double) b_total_dist / cluster_vectors.size();
+      }
+      /* Iterate over every vector to compute its Silhouette value */
+      for (size_t i = 0; i < s.size(); ++i) {
+        s[i] = (b[i] - a[i]) / utils::max(a[i],b[i]);
+      }
+      /* Compute average Silhouette */
+      double s_total{};
+      for (size_t i = 0; i < s.size(); ++i) {
+        s_total += s[i];
+      }
+      double s_avg = s_total / s.size();
+      // return results
+      return std::make_pair(s,s_avg);
+    }
+  }
+  /* Implementation of Silhouette metric for curves */
+  namespace curves {
+    //TODO
+  }
 }
+
 
 #endif

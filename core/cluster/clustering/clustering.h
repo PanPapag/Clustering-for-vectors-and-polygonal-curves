@@ -1,6 +1,8 @@
 #ifndef CLUSTERING
 #define CLUSTERING
 
+#include <map>
+
 #include "../initialization/initialization.h"
 #include "../assignment/assignment.h"
 #include "../update/update.h"
@@ -101,6 +103,21 @@ namespace cluster {
                                  std::get<0>(clusters), std::get<1>(clusters));
           }
           return std::make_pair(centroids,std::get<0>(clusters));
+        }
+        /** \brief Map each vector index to the corresponding cluster
+          @par[in] clusters - std::vector<std::vector<size_t>> returned by Predict
+          return: a map of each index to the the corresponding cluster
+        */
+        std::map<int,int> MapToClusters(std::vector<std::vector<size_t>> clusters) {
+          std::map<int,int> map_result;
+          int cluter_idx = 0;
+          for (auto const& cluster: clusters) {
+            for (auto const& object: cluster) {
+              map_result[object] = cluter_idx;
+            }
+            cluter_idx++;
+          }
+          return map_result;
         }
     };
   }
