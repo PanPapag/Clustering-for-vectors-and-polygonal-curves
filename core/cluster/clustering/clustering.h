@@ -30,7 +30,7 @@ namespace cluster {
         std::string assign;
         std::string update;
         /* Function pointers for the algorithms to be used */
-        static constexpr auto p_init = ParkJunInit<T>;
+        static constexpr auto p_init = RandomInit<T>;
         static constexpr auto p_assign = LloydsAssignment<T>;
         static constexpr auto p_update = LloydsUpdate<T>;
         /* Dataset info */
@@ -53,7 +53,7 @@ namespace cluster {
             Method for update, defaults to 'mean'
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
-          std::string init = "k-means++", std::string assign = "lloyds",
+          std::string init = "random", std::string assign = "lloyds",
           std::string update = "mean") : no_clusters(no_clusters),
           max_iter(max_iter), init(init), assign(assign), update(update) {
           /* Pass function pointer to the initialization method */

@@ -20,14 +20,21 @@ namespace cluster {
         const int& no_clusters, const std::vector<std::vector<size_t>>& clusters,
         std::vector<T>& costs) {
 
+        // for (size_t i = 0; i < no_clusters; i++) {
+        //   std::cout << i << ": ";
+        //   for (auto& selected_center : clusters[i]) {
+        //     std::cout << selected_center << " ";
+        //   }
+        //   std::cout << std::endl;
+        // }
+
         // Declare 1D vector which holds new best center
-        std::vector<size_t> new_centers_offsets(no_clusters);
-        std::vector<T> new_centers(no_clusters*vectors_dim);
+        std::vector<ssize_t> new_centers_offsets(no_clusters,0);
+        std::vector<T> new_centers(no_clusters * vectors_dim);
         for (size_t i = 0; i < no_clusters; i++) {
           for (auto& selected_center : clusters[i]) {
             T cost{};
             for (auto& id : clusters[i]) {
-              if (id == selected_center) continue;
               T dist = metric::SquaredEuclidianDistance<T>(
                 std::next(dataset_vectors.begin(), selected_center * vectors_dim),
                 std::next(dataset_vectors.begin(), id * vectors_dim),
@@ -40,17 +47,17 @@ namespace cluster {
             }
           }
         }
-        // std::cout << "New offsets:" << std::endl;
-        // for(auto& l:new_centers_offsets) {
-        //   std:: cout << l << " ";
-        // }
-        // for(auto& c:new_centers_offsets) {
-        //   std:: cout << l << " ";
-        // }
-        // std::cout << std::endl;
+        for (int i=0; i<no_clusters; i++) {
+          if(new_centers_offsets[i] == -1) {
+            for (size_t j = 0; j < vectors_dim; ++j) {
+              new_centers[i * vectors_dim + j] = centers[i * vectors_dim + j];
+            }
+          }
+        }
         for (size_t i = 0; i < no_clusters; ++i) {
           for (size_t j = 0; j < vectors_dim; ++j) {
-            new_centers[i * vectors_dim + j] = dataset_vectors[new_centers_offsets[i] * vectors_dim + j];
+            if (new_centers_offsets[i] != -1)
+              new_centers[i * vectors_dim + j] = dataset_vectors[new_centers_offsets[i] * vectors_dim + j];
           }
         }
         return new_centers;
