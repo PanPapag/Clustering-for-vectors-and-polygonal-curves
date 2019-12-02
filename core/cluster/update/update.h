@@ -16,7 +16,7 @@ namespace cluster {
        * Search for potential new centers in clusters
         (1) Calculate all the distances of each vector in a cluster
             from all the other vectors of same cluster
-        (2) Set as new center of cluster the vector 
+        (2) Set as new center of cluster the vector
             with smaller sum of distances
         @par[in] const std::vector<T>& dataset_vectors : vectors given from dataset
         @par[in] const std::vector<T>& centers : selected centers of each cluster
@@ -40,10 +40,10 @@ namespace cluster {
         std::vector<T> new_centers(no_clusters * vectors_dim);
         for (size_t i = 0; i < no_clusters; i++) {
           // iterate over each vector in cluster
-          for (auto& selected_center : clusters[i]) {
+          for (const auto& selected_center : clusters[i]) {
             T cost{};
             // calculate dist from all other vectors in cluster
-            for (auto& id : clusters[i]) {
+            for (const auto& id : clusters[i]) {
               // skip calculation - dist would be 0
               if(id == selected_center) continue;
               T dist = metric::SquaredEuclidianDistance<T>(
@@ -74,7 +74,7 @@ namespace cluster {
 
       /** \brief Lloyd's Algorithm for Update
         * Details:
-        * Compute Mean and set it as new center in each cluster: 
+        * Compute Mean and set it as new center in each cluster:
         * m(i) = (1/T) * Sum v(i)
           @par[in] const std::vector<T>& dataset_vectors : vectors given from dataset
           @par[in] const std::vector<T>& centers : selected centers of each cluster
@@ -85,27 +85,26 @@ namespace cluster {
         **/
         template <typename T>
         std::vector<T> LloydsUpdate (const std::vector<T>& dataset_vectors,
-          const std::vector<T>& centers, const int& no_vectors, const int& vectors_dim,
-          const int& no_clusters, const std::vector<std::vector<size_t>>& clusters,
-          std::vector<T>& costs) {
+          const std::vector<T>& centers, const int& no_vectors,
+          const int& vectors_dim, const int& no_clusters,
+          const std::vector<std::vector<size_t>>& clusters) {
 
           std::vector<T> new_centers(no_clusters * vectors_dim, 0);
-          for (size_t i = 0; i < no_clusters; i++) {
-            T cost{};
-            for (auto& id : clusters[i]) {
-              for(size_t j=0; j<vectors_dim; j++) {
+          for (size_t i = 0; i < no_clusters; ++i) {
+            for (const auto& id : clusters[i]) {
+              for (size_t j = 0; j < vectors_dim; ++j) {
                 new_centers[i * vectors_dim + j] += dataset_vectors[id * vectors_dim + j];
               }
             }
-            for(size_t j=0; j<vectors_dim; j++) {
+            for (size_t j = 0; j < vectors_dim; ++j) {
               new_centers[i * vectors_dim + j] /= clusters[i].size();
             }
           }
           return new_centers;
         }
       }
-    
-    
+
+
     // TODO: Fix bug in offset calculation
     /* Update Algorithms for curves */
     namespace curves {
@@ -128,9 +127,9 @@ namespace cluster {
           // Calculate all distances using DTW Distance
           T total_cost{};
           for (size_t i = 0; i < no_clusters; i++) {
-            for (auto& center : clusters[i]) {
+            for (const auto& center : clusters[i]) {
               T cost{};
-              for (auto& id : clusters[i]) {
+              for (const auto& id : clusters[i]) {
                 if (id == center) continue;
                 T dist = metric::DTWDistance<T> (
                 std::next(dataset_curves.begin(),dataset_curves_offsets[center]),
