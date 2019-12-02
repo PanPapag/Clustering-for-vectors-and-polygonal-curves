@@ -5,6 +5,8 @@
 #include <map>
 #include <tuple>
 
+#include "../../search/lsh.h"
+#include "../../utils/utils.h"
 #include "../initialization/initialization.h"
 #include "../assignment/assignment.h"
 #include "../update/update.h"
@@ -20,7 +22,7 @@ namespace cluster {
       \brief Class Cluster representing k-means/k-medoids algorithm
       for vectors
     */
-    template <typename T>
+    template <typename T, typename U>
     class Cluster {
       private:
         /* class Cluster parameters */
@@ -29,10 +31,15 @@ namespace cluster {
         std::string init;
         std::string assign;
         std::string update;
+        /* Range-lsh parameters */
+        double window = 10.0; //TODO change it
+        uint8_t k;  // number of hash functions
+        uint8_t L;  // number of hash tables
         /* Dataset info */
         std::vector<T> dataset_vectors;
-        int no_vectors;
-        int vectors_dim;
+        std::vector<U> dataset_vectors_ids;
+        uint16_t vectors_dim;
+        uint32_t no_vectors;
       public:
         /** \brief class Cluster constructor
           @par no_clusters: int, optional, default: 8
@@ -50,8 +57,9 @@ namespace cluster {
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
           std::string init = "random", std::string assign = "lloyd",
-          std::string update = "mean") : no_clusters(no_clusters),
-          max_iter(max_iter), init(init), assign(assign), update(update) {}
+          std::string update = "mean", uint8_t no_hf = 3, uint8_t no_ht = 5)
+          : no_clusters(no_clusters), max_iter(max_iter), init(init),
+          assign(assign), update(update), k(no_hf), L(no_ht)  {}
         /**
           \brief  Class Cluster default destructor
         */
@@ -61,8 +69,10 @@ namespace cluster {
           @par[in] no_v : number of vectors
           @par[in] v_dim : vectors' dimensions (all vectors are dimensionally equal)
         */
-        void Fit(const std::vector<T>& dv, const int& no_v, const int& v_dim) {
+        void Fit(const std::vector<T>& dv, const std::vector<U>& dv_ids,
+          const uint32_t& no_v, const uint16_t& v_dim) {
           dataset_vectors = dv;
+          dataset_vectors_ids = dv_ids;
           no_vectors = no_v;
           vectors_dim = v_dim;
           /**
@@ -70,7 +80,13 @@ namespace cluster {
             to corresponding lsh structures
           */
           if (assign == "range-lsh") {
-            std::cout << "TODO" << std::endl;
+            window = utils::ComputeMean<T>(dataset_vectors, vectors_dim, no_vectors);
+            std::cout << window << std::endl;
+            /* Index no_vectors points into L hashtables */
+            search::vectors::LSH<T,U> lsh{k, L, vectors_dim, no_vectors,
+                                          window, dataset_vectors,
+                                          dataset_vectors_ids};
+
           }
         }
         /**
