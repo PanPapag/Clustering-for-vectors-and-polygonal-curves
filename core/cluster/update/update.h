@@ -20,16 +20,8 @@ namespace cluster {
         const int& no_clusters, const std::vector<std::vector<size_t>>& clusters,
         std::vector<T>& costs) {
 
-        // for (size_t i = 0; i < no_clusters; i++) {
-        //   std::cout << i << ": ";
-        //   for (auto& selected_center : clusters[i]) {
-        //     std::cout << selected_center << " ";
-        //   }
-        //   std::cout << std::endl;
-        // }
-
         // Declare 1D vector which holds new best center
-        std::vector<ssize_t> new_centers_offsets(no_clusters,0);
+        std::vector<ssize_t> new_centers_offsets(no_clusters,-1);
         std::vector<T> new_centers(no_clusters * vectors_dim);
         for (size_t i = 0; i < no_clusters; i++) {
           for (auto& selected_center : clusters[i]) {
@@ -47,17 +39,12 @@ namespace cluster {
             }
           }
         }
-        for (int i=0; i<no_clusters; i++) {
-          if(new_centers_offsets[i] == -1) {
-            for (size_t j = 0; j < vectors_dim; ++j) {
-              new_centers[i * vectors_dim + j] = centers[i * vectors_dim + j];
-            }
-          }
-        }
         for (size_t i = 0; i < no_clusters; ++i) {
           for (size_t j = 0; j < vectors_dim; ++j) {
             if (new_centers_offsets[i] != -1)
               new_centers[i * vectors_dim + j] = dataset_vectors[new_centers_offsets[i] * vectors_dim + j];
+            else
+              new_centers[i * vectors_dim + j] = centers[i * vectors_dim + j];
           }
         }
         return new_centers;

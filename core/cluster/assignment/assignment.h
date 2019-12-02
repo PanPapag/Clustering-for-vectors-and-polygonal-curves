@@ -41,14 +41,10 @@ namespace cluster {
                 assigned_cluster = j;
               }
             }
-            if (min_dist == 0) std::cout << assigned_cluster << "-" << i << std::endl;
             // Store to closest cluster
             d_array[assigned_cluster].push_back(i);
             assign_costs[assigned_cluster] += min_dist;
           }
-          // bool i = d_array[0].size() + d_array[1].size() + d_array[2].size() + d_array[3].size() == no_vectors; 
-          // std::cout << i << std::endl;
-          std::cout << std::endl;
           return std::make_tuple(d_array,assign_costs);
         }
       }
