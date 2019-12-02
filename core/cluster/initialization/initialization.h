@@ -79,7 +79,7 @@ namespace cluster {
           (2) Suffle vector and keep the k - first cells.
           (3) Match each number with vectors' offsets.
           (4) Return selected vectors.
-          @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
+          @par[in] const std::vector<T>& dataset_vectors : vectors given from dataset
           @par[in] const int& no_vectors : number of vectors
           @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
                                             dimensionally equal)
@@ -186,10 +186,11 @@ namespace cluster {
           (3) Match each number with curves' offsets.
           (4) Calculate curves' new offsets.
           (4) Return centers as a tuple containg also their legths and offsets.
-          @par[in] const std::vector<T>& dataset_vectors : vectors givern from dataset
-          @par[in] const int& no_vectors : number of vectors
-          @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
-                                            dimensionally equal)
+          @par[in] const std::vector<std::pair<T,T>>& dataset_curves : 
+                                          curves givern from dataset
+          @par[in] const int& dataset_curves_lengths : curves' lengths
+          @par[in] const int& dataset_curves_offsets : curves' offsets
+          @par[in] const int& no_curves : number of curves
           @par[in] const int& no_clusters : number of clusters
       */
       template <typename T>

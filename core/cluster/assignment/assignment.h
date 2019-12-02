@@ -11,9 +11,18 @@ namespace cluster {
   namespace assignment {
       /* Assignment Algorithms for vectors */
       namespace vectors {
-        /** \brief Lloyd's Approach for Assignment: Each vector is assigned to
-         * its closest cluster.
-         * Returns a 2D vector which holds the id of vectors assigned to each cluster.
+        /** \brief Lloyd's Approach for Assignment.
+         * Details:
+          (1) For each vector calculate distances from each center. 
+          (2) Assign each vector to its closest cluster.
+          (3) Store assignment costs.
+          (4) Return clusters' offsets and total assignment costs.
+          @par[in] const std::vector<T>& dataset_vectors : vectors given from dataset
+          @par[in] const std::vector<T>& centers : selected centers of each cluster
+          @par[in] const int& no_vectors : number of vectors
+          @par[in] const int& vectors_dim : vectors' dimensions (all vectors are
+                                            dimensionally equal)
+          @par[in] const int& no_clusters : number of clusters  
          * We use Euclidean Distance to calculate minimum distances.
         **/
         template <typename T>
@@ -41,7 +50,11 @@ namespace cluster {
                 assigned_cluster = j;
               }
             }
-            // Store to closest cluster
+            // Store to closest cluster and 
+            // compute assignment cost :
+            // Assignment Cost (aka Obj. Function)
+            // equals to the summary of distances
+            // of each vector to its cluster's center
             d_array[assigned_cluster].push_back(i);
             assign_costs[assigned_cluster] += min_dist;
           }
@@ -50,10 +63,22 @@ namespace cluster {
       }
       /* Assignment Algorithms for curves */
       namespace curves {
-        /** \brief Lloyd's Approach for Assignment: Each curve is assigned to
-         * its closest cluster.
-         * Returns a 2D vector which holds the id of curves assigned to each cluster.
-         * We use DTW to calculate minimum distances.
+        /** \brief Lloyd's Approach for Assignment.
+         * Details:
+          (1) For each vector calculate distances from each center. 
+          (2) Assign each vector to its closest cluster.
+          (3) Store assignment costs.
+          (4) Return clusters' offsets and total assignment costs.
+          @par[in] const std::vector<std::pair<T,T>>& dataset_curves : 
+                                            curves givern from dataset
+          @par[in] std::tuple<std::vector<std::pair<T,T>>, 
+                   std::vector<int>, std::vector<int>>& centers : 
+                                          centers assigned so far.
+          @par[in] const int& dataset_curves_lengths : curves' lengths
+          @par[in] const int& dataset_curves_offsets : curves' offsets
+          @par[in] const int& no_curves : number of curves
+          @par[in] const int& no_clusters : number of clusters  
+         * We use Euclidean Distance to calculate minimum distances.
         **/
         template <typename T>
         std::tuple<std::vector<std::vector<size_t>>, std::vector<T>>

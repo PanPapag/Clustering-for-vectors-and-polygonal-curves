@@ -57,11 +57,11 @@ namespace metric {
   */
   template <typename T, typename iterator>
   T SquaredEuclidianDistance(iterator p, iterator q, iterator q_end) {
-    T manhattan_distance{};
+    T euclidean_distance{};
     for (; q < q_end; ++q, ++p) {
-      manhattan_distance += (*q - *p) * (*q - *p);
+      euclidean_distance += (*q - *p) * (*q - *p);
     }
-    return manhattan_distance;
+    return euclidean_distance;
   }
   /** \brief Computes Dynamic Time Warping between two curves
     @par iterator p - iterator of the dataset curve

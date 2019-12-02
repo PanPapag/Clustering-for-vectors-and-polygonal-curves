@@ -154,7 +154,7 @@ namespace cluster {
         /* Function pointers for the algorithms to be used */
         static constexpr auto p_init = ParkJunInit<T>;
         static constexpr auto p_assign = LloydsAssignment<T>;
-        static constexpr auto p_update = LloydsUpdate<T>;
+        static constexpr auto p_update = PAMUpdate<T>;
         /* Dataset info */
         std::vector<std::pair<T,T>> dataset_curves;
         std::vector<int> dataset_curves_lengths;
