@@ -31,7 +31,6 @@ namespace cluster {
       template <typename T>
       std::vector<T> ParkJunInit(const std::vector<T>& dataset_vectors,
         const int& no_vectors, const int& vectors_dim, const int& no_clusters) {
-
         // Declare 2D d array which holds all distances between the vectors
         T d_array[no_vectors][no_vectors];
         // Calculate all distances using ManhattanDistance
@@ -92,7 +91,7 @@ namespace cluster {
           // Create a vector with numbers in range(0,no_clusters)
           std::vector<size_t> rand_vec(no_vectors);
           std::vector<T> centers(no_clusters * vectors_dim);
-          for(size_t i = 0; i < no_vectors; i++) {
+          for (size_t i = 0; i < no_vectors; i++) {
             rand_vec[i] = i;
           }
           // Suffle vector
@@ -112,10 +111,12 @@ namespace cluster {
     /* Initialization Algorithms for curves */
     namespace curves {
       /** \brief Initilization of cluster centroids using Park-Jun Algorithm
-        @par[in] const std::vector<std::pair<T,T>>& dataset_curves
-        @par[in] const td::vector<int>& dataset_curves_lengths
-        @par[in] const int& no_curves
-        @par[in] const int& no_clusters
+      @par[in] const std::vector<std::pair<T,T>>& dataset_curves :
+                                      curves givern from dataset
+      @par[in] const int& dataset_curves_lengths : curves' lengths
+      @par[in] const int& dataset_curves_offsets : curves' offsets
+      @par[in] const int& no_curves : number of curves
+      @par[in] const int& no_clusters : number of clusters
         return A tuple of:
           1) std::vector<std::pair<T,T> which represents the centroids curves
           2) std::vector<int> which stores centroids curves lengths
@@ -186,7 +187,7 @@ namespace cluster {
           (3) Match each number with curves' offsets.
           (4) Calculate curves' new offsets.
           (4) Return centers as a tuple containg also their legths and offsets.
-          @par[in] const std::vector<std::pair<T,T>>& dataset_curves : 
+          @par[in] const std::vector<std::pair<T,T>>& dataset_curves :
                                           curves givern from dataset
           @par[in] const int& dataset_curves_lengths : curves' lengths
           @par[in] const int& dataset_curves_offsets : curves' offsets
@@ -202,7 +203,7 @@ namespace cluster {
 
         // Create a vector with numbers in range (0,no_clusters)
         std::vector<size_t> rand_vec(no_curves);
-        for(size_t i = 0; i < no_curves; i++) {
+        for (size_t i = 0; i < no_curves; i++) {
           rand_vec[i] = i;
         }
         // Suffle vector

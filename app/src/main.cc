@@ -282,7 +282,7 @@ int main(int argc, char **argv) {
 
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::curves::Cluster<T> cl{input_info.K, MAX_ITER, input_info.init,
+    cluster::curves::Cluster<T> cl{input_info.K, 5, input_info.init,
                                    input_info.assign, input_info.update};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);

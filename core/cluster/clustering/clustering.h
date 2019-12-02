@@ -29,10 +29,6 @@ namespace cluster {
         std::string init;
         std::string assign;
         std::string update;
-        /* Function pointers for the algorithms to be used */
-        static constexpr auto p_init = RandomInit<T>;
-        static constexpr auto p_assign = LloydsAssignment<T>;
-        static constexpr auto p_update = LloydsUpdate<T>;
         /* Dataset info */
         std::vector<T> dataset_vectors;
         int no_vectors;
@@ -53,15 +49,9 @@ namespace cluster {
             Method for update, defaults to 'mean'
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
-          std::string init = "random", std::string assign = "lloyds",
+          std::string init = "random", std::string assign = "lloyd",
           std::string update = "mean") : no_clusters(no_clusters),
-          max_iter(max_iter), init(init), assign(assign), update(update) {
-          /* Pass function pointer to the initialization method */
-          if (init == "random") {
-            auto p_init = cluster::initialization::vectors::RandomInit<T>;
-          }
-          //TODO pass others too
-        }
+          max_iter(max_iter), init(init), assign(assign), update(update) {}
         /**
           \brief  Class Cluster default destructor
         */
@@ -79,7 +69,7 @@ namespace cluster {
             If assignment step is executed using lsh range search, map dataset
             to corresponding lsh structures
           */
-          if (assign == "lsh") {
+          if (assign == "range-lsh") {
             std::cout << "TODO" << std::endl;
           }
         }
@@ -97,19 +87,33 @@ namespace cluster {
           std::vector<T> centroids;
           std::tuple<std::vector<std::vector<size_t>>,std::vector<T>> clusters;
           /* At first initialize centroids */
-          std::cout << no_clusters << std::endl;
-          centroids = p_init(dataset_vectors, no_vectors, vectors_dim,
-                             no_clusters);
+					if (init == "random") {
+						centroids = RandomInit(dataset_vectors, no_vectors,
+																	 vectors_dim, no_clusters);
+					} else if (init == "k-means++") {
+						centroids = ParkJunInit(dataset_vectors, no_vectors,
+																	  vectors_dim, no_clusters);
+					}
           /* Calculate clusters and update centroids max_iter times */
           for (size_t i = 0; i < max_iter; ++i) {
             /* Assigment step */
-            clusters = p_assign(dataset_vectors, centroids, no_vectors,
-                                vectors_dim, no_clusters);
-          
+						if (assign == "lloyd") {
+							clusters = LloydsAssignment(dataset_vectors, centroids,
+																					no_vectors, vectors_dim, no_clusters);
+						} else if (assign == "range-lsh") {
+							std::cout << "TODO" << std::endl;
+						}
+
             /* Update step */
-            centroids = p_update(dataset_vectors, centroids,
-                                 no_vectors, vectors_dim, no_clusters,
-                                 std::get<0>(clusters), std::get<1>(clusters));
+						if (update == "mean") {
+							centroids = LloydsUpdate(dataset_vectors, centroids,
+																		 	 no_vectors, vectors_dim,
+																			 no_clusters, std::get<0>(clusters));
+						} else if (update == "pam") {
+							centroids = PAMUpdate(dataset_vectors, centroids,
+																	  no_vectors, vectors_dim, no_clusters,
+																	  std::get<0>(clusters), std::get<1>(clusters));
+						}
           }
           /* End time measuring */
           auto stop = high_resolution_clock::now();
@@ -152,7 +156,7 @@ namespace cluster {
         std::string assign;
         std::string update;
         /* Function pointers for the algorithms to be used */
-        static constexpr auto p_init = ParkJunInit<T>;
+        static constexpr auto f_init = ParkJunInit<T>;
         static constexpr auto p_assign = LloydsAssignment<T>;
         static constexpr auto p_update = PAMUpdate<T>;
         /* Dataset info */
@@ -177,26 +181,21 @@ namespace cluster {
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
           std::string init = "k-means++", std::string assign = "lloyds",
-          std::string update = "means") : no_clusters(no_clusters),
-          max_iter(max_iter), init(init), assign(assign), update(update) {
-          /* Pass function pointer to the initialization method */
-          if (init == "random") {
-            auto p_init = cluster::initialization::curves::RandomInit<T>;
-          }
-          //TODO pass others too
-        }
+          std::string update = "pam") : no_clusters(no_clusters),
+          max_iter(max_iter), init(init), assign(assign), update(update) {}
         /**
           \brief  Class Cluster default destructor
         */
         ~Cluster() = default;
         /** \brief Fit method stores dataset info for clustering
-          @par[in] dv : vectors given from dataset
-          @par[in] no_v : number of vectors
-          @par[in] v_dim : vectors' dimensions (all vectors are dimensionally equal)
+          @par[in] dc : curves given from dataset
+					@par[in] dcl: a vector which store the length of each curve in the dataset
+					@par[in] dco: a vector which store the offset of each curve in the dc
+          @par[in] no_c : number of curves
         */
         void Fit(const std::vector<std::pair<T,T>>& dc, const std::vector<int>& dcl,
                 const std::vector<int>& dco, const int& no_c) {
-          
+
           dataset_curves = dc;
           dataset_curves_lengths = dcl;
           dataset_curves_offsets = dco;
@@ -205,7 +204,7 @@ namespace cluster {
             If assignment step is executed using lsh range search, map dataset
             to corresponding lsh structures
           */
-          if (assign == "lsh") {
+          if (assign == "range-lsh") {
             std::cout << "TODO" << std::endl;
           }
         }
@@ -225,17 +224,35 @@ namespace cluster {
           std::vector<int>,std::vector<int>> centroids;
           std::tuple<std::vector<std::vector<size_t>>, std::vector<T>> clusters;
           /* At first initialize centroids */
-          centroids = p_init(dataset_curves, dataset_curves_lengths, 
-                              dataset_curves_offsets, no_curves, no_clusters);
+          std::cout << "Init Algorithm" << std::endl;
+					if (init == "random") {
+						centroids = RandomInit(dataset_curves, dataset_curves_lengths,
+																	 dataset_curves_offsets, no_curves, no_clusters);
+					} else if (init == "k-means++") {
+						centroids = ParkJunInit(dataset_curves, dataset_curves_lengths,
+																		dataset_curves_offsets, no_curves, no_clusters);
+					}
           /* Calculate clusters and update centroids max_iter times */
           for (size_t i = 0; i < max_iter; ++i) {
             /* Assigment step */
-            clusters = p_assign(dataset_curves, centroids, dataset_curves_lengths,
-                                dataset_curves_offsets, no_curves, no_clusters);
+            std::cout << "Assignment Algorithm" << std::endl;
+						if (assign == "lloyd") {
+							clusters = LloydsAssignment(dataset_curves, centroids,
+																				  dataset_curves_lengths,
+																					dataset_curves_offsets,
+																					no_curves, no_clusters);
+						} else if (assign == "range-lsh") {
+							std::cout << "TODO" << std::endl;
+						}
             /* Update step */
-            centroids = p_update(dataset_curves, centroids, dataset_curves_lengths,
-                                 dataset_curves_offsets, no_curves, no_clusters,
-                                 std::get<0>(clusters), std::get<1>(clusters));
+            std::cout << "Update Algorithm" << std::endl;
+						if (update == "mean") {
+							std::cout << "TODO" << std::endl;
+						} else if (update == "pam") {
+							centroids = PAMUpdate(dataset_curves, centroids, dataset_curves_lengths,
+																	 	dataset_curves_offsets, no_curves, no_clusters,
+																	 	std::get<0>(clusters), std::get<1>(clusters));
+						}
           }
           /* End time measuring */
           auto stop = high_resolution_clock::now();
@@ -243,7 +260,7 @@ namespace cluster {
           // Return result in the form of a tuple
           return std::make_tuple(centroids,std::get<0>(clusters),total_time.count());
         }
-        /** \brief Map each vector index to the corresponding cluster
+        /** \brief Map each curve index to the corresponding cluster
           @par[in] clusters - std::vector<std::vector<size_t>> returned by Predict
           return: a map of each index to the the corresponding cluster
         */
