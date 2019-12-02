@@ -177,7 +177,7 @@ namespace cluster {
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
           std::string init = "k-means++", std::string assign = "lloyds",
-          std::string update = "mean") : no_clusters(no_clusters),
+          std::string update = "means") : no_clusters(no_clusters),
           max_iter(max_iter), init(init), assign(assign), update(update) {
           /* Pass function pointer to the initialization method */
           if (init == "random") {
