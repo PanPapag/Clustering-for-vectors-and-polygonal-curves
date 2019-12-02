@@ -162,7 +162,7 @@ namespace cluster {
                 new_centers.push_back(dataset_curves[dataset_curves_offsets[offsets[i]] + j]);
               }
             } else {
-              new_centers_lengths[i] = prev_lengths[prev_offsets[i]];
+              new_centers_lengths[i] = prev_lengths[i];
               for (size_t j = 0; j < new_centers_lengths[i]; ++j) {
                 new_centers.push_back(prev_centers[prev_offsets[i] + j]);
               }
