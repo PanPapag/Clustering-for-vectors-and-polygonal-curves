@@ -32,7 +32,8 @@ namespace cluster {
         std::string assign;
         std::string update;
         /* Range-lsh parameters */
-        double window = 10.0; //TODO change it
+        search::vectors::LSH<T,U> *lsh_structure;
+        double window;
         uint8_t k;  // number of hash functions
         uint8_t L;  // number of hash tables
         /* Dataset info */
@@ -40,6 +41,7 @@ namespace cluster {
         std::vector<U> dataset_vectors_ids;
         uint16_t vectors_dim;
         uint32_t no_vectors;
+        std::map<U,int> map_id_to_index;
       public:
         /** \brief class Cluster constructor
           @par no_clusters: int, optional, default: 8
@@ -61,9 +63,9 @@ namespace cluster {
           : no_clusters(no_clusters), max_iter(max_iter), init(init),
           assign(assign), update(update), k(no_hf), L(no_ht)  {}
         /**
-          \brief  Class Cluster default destructor
+          \brief  Class Cluster destructor
         */
-        ~Cluster() = default;
+        ~Cluster() { delete lsh_structure; }
         /** \brief Fit method stores dataset info for clustering
           @par[in] dv : vectors given from dataset
           @par[in] no_v : number of vectors
@@ -80,13 +82,17 @@ namespace cluster {
             to corresponding lsh structures
           */
           if (assign == "range-lsh") {
-            window = utils::ComputeMean<T>(dataset_vectors, vectors_dim, no_vectors);
-            std::cout << window << std::endl;
+            window = utils::ComputeMean<T>(dataset_vectors,
+                                           vectors_dim, no_vectors);
             /* Index no_vectors points into L hashtables */
-            search::vectors::LSH<T,U> lsh{k, L, vectors_dim, no_vectors,
-                                          window, dataset_vectors,
-                                          dataset_vectors_ids};
-
+            lsh_structure = new search::vectors::LSH<T,U>(k, L, vectors_dim,
+                                                          no_vectors, window,
+                                                          dataset_vectors,
+                                                          dataset_vectors_ids);
+            /* Map each id from dataset_vectors_ids to its index */
+            for (size_t i = 0; i < no_vectors; ++i) {
+              map_id_to_index[dataset_vectors_ids[i]] = i;
+            }
           }
         }
         /**
@@ -117,7 +123,10 @@ namespace cluster {
 							clusters = LloydsAssignment(dataset_vectors, centroids,
 																					no_vectors, vectors_dim, no_clusters);
 						} else if (assign == "range-lsh") {
-							std::cout << "TODO" << std::endl;
+              clusters = ReverseAssignment<T,U>(dataset_vectors, dataset_vectors_ids,
+                                                centroids, no_vectors, vectors_dim,
+                                                no_clusters, lsh_structure,
+                                                map_id_to_index);
 						}
 
             /* Update step */
@@ -240,7 +249,6 @@ namespace cluster {
           std::vector<int>,std::vector<int>> centroids;
           std::tuple<std::vector<std::vector<size_t>>, std::vector<T>> clusters;
           /* At first initialize centroids */
-          std::cout << "Init Algorithm" << std::endl;
 					if (init == "random") {
 						centroids = RandomInit(dataset_curves, dataset_curves_lengths,
 																	 dataset_curves_offsets, no_curves, no_clusters);
@@ -251,7 +259,6 @@ namespace cluster {
           /* Calculate clusters and update centroids max_iter times */
           for (size_t i = 0; i < max_iter; ++i) {
             /* Assigment step */
-            std::cout << "Assignment Algorithm" << std::endl;
 						if (assign == "lloyd") {
 							clusters = LloydsAssignment(dataset_curves, centroids,
 																				  dataset_curves_lengths,
@@ -261,7 +268,6 @@ namespace cluster {
 							std::cout << "TODO" << std::endl;
 						}
             /* Update step */
-            std::cout << "Update Algorithm" << std::endl;
 						if (update == "mean") {
 							std::cout << "TODO" << std::endl;
 						} else if (update == "pam") {

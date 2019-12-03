@@ -23,7 +23,7 @@
 
 using namespace std::chrono;
 
-#define MAX_ITER 100
+#define MAX_ITER 10
 #define T double
 
 int main(int argc, char **argv) {
