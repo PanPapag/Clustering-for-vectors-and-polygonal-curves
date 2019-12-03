@@ -247,7 +247,10 @@ namespace cluster {
             /* Update step */
             std::cout << "Update Algorithm" << std::endl;
 						if (update == "mean") {
-							std::cout << "TODO" << std::endl;
+							LloydsUpdate(dataset_curves, centroids, dataset_curves_lengths,
+																	 	  dataset_curves_offsets, no_curves, no_clusters,
+																	 	  std::get<0>(clusters), std::get<1>(clusters));
+                                       break;
 						} else if (update == "pam") {
 							centroids = PAMUpdate(dataset_curves, centroids, dataset_curves_lengths,
 																	 	dataset_curves_offsets, no_curves, no_clusters,

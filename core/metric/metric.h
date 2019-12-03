@@ -63,6 +63,7 @@ namespace metric {
     }
     return euclidean_distance;
   }
+
   /** \brief Computes Dynamic Time Warping between two curves
     @par iterator p - iterator of the dataset curve
     @par iterator p_end - end iterator of dataset curve
@@ -97,17 +98,79 @@ namespace metric {
           utils::min(dtw_array[(i - 1) * (M + 1) + j],      // increment
             dtw_array[i * (M + 1) + j - 1],                 // deletion
             dtw_array[(i - 1) * (M + 1) + j - 1]);          // match
-
       }
       // reset query curve iterator
       q = q_start;
     }
+
     // Set result to a new variable and free memory allocated
     dtw_distance = dtw_array[dtw_size - 1];
     delete[] dtw_array;
     // Return dynamic time warping distance
     return dtw_distance;
   }
+
+  template <typename T, typename iterator>
+  std::vector<std::pair<T,T>> BestTraversal(iterator p, iterator p_end, 
+                                            iterator q, iterator q_end) {
+    T dtw_distance{};
+    // save up start iterator of query curve
+    iterator q_start = q;
+    // Get correspodent lengths of the two curves
+    size_t N = std::distance(p,p_end);
+    size_t M = std::distance(q,q_end);
+    size_t dtw_size = (N + 1) * (M + 1);
+    // Initialize the dtw 2D array using 1D notation
+    auto dtw_array = new T [dtw_size];
+    dtw_array[0] = 0;
+    for (size_t i = 1; i < N + 1; ++i) {
+      dtw_array[i * (M + 1)] = std::numeric_limits<T>::max();
+    }
+    for (size_t i = 1; i < M + 1; ++i) {
+      dtw_array[i] = std::numeric_limits<T>::max();
+    }
+    // Compute the dtw distance using dynamic programming
+    for (size_t i = 1; i < N + 1, p < p_end; ++i, ++p) {
+      for (size_t j = 1; j < M + 1, q < q_end; ++j, ++q) {
+        T dist = _2DEuclidianDistance(*p, *q);
+        dtw_array[i * (M + 1) + j] = dist +
+          utils::min(dtw_array[(i - 1) * (M + 1) + j],      // increment
+            dtw_array[i * (M + 1) + j - 1],                 // deletion
+            dtw_array[(i - 1) * (M + 1) + j - 1]);          // match
+      }
+      // reset query curve iterator
+      q = q_start;
+    }
+    // iterate dtw array to get optimal path
+    size_t i = N;
+    size_t j = M;
+    std::vector<std::pair<T,T>> ret_vec;
+    while(i>1 && j>1) {
+      if (i == 1) {
+        j -= 1;
+      } else if (j == 1) {
+        i -= 1;
+      } else {
+        T dist = utils::min(dtw_array[(i - 1) * (M + 1) + j], 
+                dtw_array[i * (M + 1) + j - 1], 
+                dtw_array[(i - 1) * (M + 1) + j - 1]);
+        if (dtw_array[(i - 1) * (M + 1) + j] == dist) {
+          i -= 1;
+        } else if (dtw_array[i * (M + 1) + j - 1]) {
+          j -= 1;
+        } else {
+          i -= 1;
+          j -= 1;
+        }
+      }
+      ret_vec.push_back(std::make_pair(i-1,j-1));
+    }
+    ret_vec.push_back(std::make_pair(0,0));
+    delete[] dtw_array;
+    std::reverse(ret_vec.begin(), ret_vec.end());
+    return ret_vec;
+  }
+
   /** \brief Computes average and max distance ratio appox_dists / exact_dists
     Each tuple consists of the nearest distance found, the id of the point/curve
     with minimum distance and the time taken to be computed
