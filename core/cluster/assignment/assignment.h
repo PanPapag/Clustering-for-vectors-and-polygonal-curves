@@ -175,7 +175,7 @@ namespace cluster {
               int min_centroid_index;
               for (size_t j = 0; j < no_clusters; ++j) {
                 T dist = metric::ManhattanDistance<T>(
-                  std::next(centroids.begin(), i * vectors_dim),
+                  std::next(dataset_vectors.begin(), i * vectors_dim),
                   std::next(centroids.begin(), j * vectors_dim),
                   std::next(centroids.begin(), j * vectors_dim + vectors_dim));
                 if (dist < min_dist) {
