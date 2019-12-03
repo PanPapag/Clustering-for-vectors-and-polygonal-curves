@@ -160,8 +160,9 @@ int main(int argc, char **argv) {
      */
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::vectors::Cluster<T> cl{input_info.K, MAX_ITER, input_info.init,
-                                    input_info.assign, input_info.update};
+    cluster::vectors::Cluster<T,U> cl{input_info.K, MAX_ITER, input_info.init,
+                                      input_info.assign, input_info.update,
+                                      input_info.k, input_info.L};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;
@@ -175,7 +176,7 @@ int main(int argc, char **argv) {
     */
     start = high_resolution_clock::now();
     std::cout << "\nFitting dataset.." << std::endl;
-    cl.Fit(dataset_vectors, input_info.N, input_info.K);
+    cl.Fit(dataset_vectors, dataset_vectors_ids, input_info.N, input_info.D);
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Fitting dataset completed successfully." << std::endl;

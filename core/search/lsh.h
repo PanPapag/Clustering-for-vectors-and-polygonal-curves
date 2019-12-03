@@ -54,7 +54,7 @@ namespace search {
         */
         LSH(const uint8_t K, const uint8_t L, const uint16_t D,
             const uint32_t N, const double r, const std::vector<T>& points,
-            const std::vector<T>& ids) : K(K), L(L), D(D), N(N), R(r),
+            const std::vector<U>& ids) : K(K), L(L), D(D), N(N), R(r),
             feature_vector(points), feature_vector_ids(ids) {
 
             w = 2 * r;

@@ -42,6 +42,30 @@ namespace utils {
     @par int b - modulo divisor
   */
   constexpr int mod(int a, int b) { return (a % b + b) % b; }
+  /**
+    \brief Compute mean of the points given in R^d
+  */
+  template <typename T>
+  double ComputeMean(const std::vector<T>& points, const uint16_t& points_dim,
+    const uint32_t& no_points) {
+
+    /* Compute mean point coordinate by coordinate */
+    std::vector<double> mean_point(points_dim);
+    for (size_t i = 0; i < points_dim; ++i) {
+      for (size_t j = 0; j < no_points; ++j) {
+        mean_point[i] += points[j * points_dim + i];
+      }
+      mean_point[i] /= no_points;
+    }
+    /* Compute the mean coordinate */
+    double mean = 0.0;
+    for (size_t i = 0; i < points_dim; ++i) {
+      mean += mean_point[i];
+    }
+    mean /= points_dim;
+    // Return result
+    return mean;
+  }
   /** \brief Compute delta as the average of the euclidian distance of
     concecutive points for all curves
   */
