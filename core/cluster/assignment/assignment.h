@@ -78,8 +78,7 @@ namespace cluster {
         ReverseAssignment(const std::vector<T>& dataset_vectors,
           const std::vector<U>& dataset_vectors_ids, const std::vector<T>& centroids,
           const int& no_vectors, const int& vectors_dim, const int& no_clusters,
-          search::vectors::LSH<T,U> *lsh,
-          std::map<U,int>& map_id_to_index) {
+          search::vectors::LSH<T,U> *lsh, std::map<U,int>& map_id_to_index) {
 
           /* At first create a map vector_id --> centroid_id. Unassigned vectors
             are mapped to -1. All vectors are initialized to -1 */
@@ -104,6 +103,7 @@ namespace cluster {
             other centroid
           */
           T min_dist = std::numeric_limits<T>::max();
+          T max_dist = std::numeric_limits<T>::min();
           for (size_t i = 0; i < no_clusters; ++i) {
             for (size_t j = i + 1; j < no_clusters; ++j) {
               T dist = metric::SquaredEuclidianDistance<T>(
@@ -113,6 +113,9 @@ namespace cluster {
               if (dist < min_dist) {
                 min_dist = dist;
               }
+              if (dist > max_dist) {
+                max_dist = dist;
+              }
             }
           }
           double radius = (double) min_dist / 2;
@@ -121,7 +124,7 @@ namespace cluster {
           std::vector<std::vector<size_t>> d_array(no_clusters);
           std::vector<T> assign_costs(no_clusters, 0);
           /* Execute step 1 */
-          while (no_vectors_assigned <= 0.95 * no_vectors) {
+          while (no_vectors_assigned <= 0.95 * no_vectors && radius <= max_dist) {
             /* Execute range search for each centroid */
             for (size_t i = 0; i < no_clusters; ++i) {
               auto range_results = lsh->RadiusNearestNeighbor(centroids, i, radius);
@@ -131,6 +134,11 @@ namespace cluster {
                 int v_index = map_id_to_index[v_id];
                 // Unassigned vector
                 if (assigned_vector_to_centroid[v_index] == -1) {
+                  // Store to closest cluster and
+                  // compute assignment cost :
+                  // Assignment Cost (aka Obj. Function)
+                  // equals to the summary of distances
+                  // of each vector to its cluster's centroid
                   d_array[i].push_back(v_index);
                   assign_costs[i] += v_dist;
                   // Update structures
@@ -141,11 +149,13 @@ namespace cluster {
                   // In this case compare its old distance with the new one
                   int centroid_assigned = assigned_vector_to_centroid[v_index];
                   T prev_dist = metric::ManhattanDistance<T>(
+                    std::next(dataset_vectors.begin(), v_index * vectors_dim),
                     std::next(centroids.begin(), centroid_assigned * vectors_dim),
-                    std::next(centroids.begin(), i * vectors_dim),
-                    std::next(centroids.begin(), i * vectors_dim + vectors_dim));
+                    std::next(centroids.begin(), centroid_assigned * vectors_dim + vectors_dim));
                   if (v_dist < prev_dist) {
                     d_array[i].push_back(v_index);
+                    // Substuct previous dist and add the one
+                    assign_costs[i] -= prev_dist;
                     assign_costs[i] += v_dist;
                     // Update structures
                     assigned_vector_to_centroid[v_index] = i;
@@ -157,6 +167,7 @@ namespace cluster {
             /* Increase radius (Multiply by 2) */
             radius *= 2;
           }
+
           /* For each unassigned vector compute its distance to each centroid */
           for (size_t i = 0; i < no_vectors; ++i) {
             if (assigned_vector_to_centroid[i] == -1) {
@@ -174,6 +185,9 @@ namespace cluster {
               }
               d_array[min_centroid_index].push_back(i);
               assign_costs[min_centroid_index] += min_dist;
+              // Update structures
+              assigned_vector_to_centroid[i] = min_centroid_index;
+              no_vectors_assigned++;
             }
           }
           // return a tuple of the result
