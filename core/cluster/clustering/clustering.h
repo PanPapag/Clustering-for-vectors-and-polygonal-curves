@@ -269,9 +269,9 @@ namespace cluster {
 						}
             /* Update step */
 						if (update == "mean") {
-							LloydsUpdate(dataset_curves, centroids, dataset_curves_lengths,
-																	 	  dataset_curves_offsets, no_curves, no_clusters,
-																	 	  std::get<0>(clusters), std::get<1>(clusters));
+							centroids = LloydsUpdate(dataset_curves, centroids, dataset_curves_lengths,
+  																	 	 dataset_curves_offsets, no_curves, no_clusters,
+  																	 	 std::get<0>(clusters), std::get<1>(clusters));
 						} else if (update == "pam") {
 							centroids = PAMUpdate(dataset_curves, centroids, dataset_curves_lengths,
 																	 	dataset_curves_offsets, no_curves, no_clusters,

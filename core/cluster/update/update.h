@@ -108,7 +108,7 @@ namespace cluster {
     namespace curves {
       /**
         \brief Lloyd's Approach for Update
-      **/
+      */
       template <typename T>
       std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
         PAMUpdate (const std::vector<std::pair<T,T>>& dataset_curves,
@@ -172,10 +172,9 @@ namespace cluster {
       }
       /**
         \brief Lloyd's Approach for Update
-      **/
+      */
       template <typename T>
       std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
-      //void
         LloydsUpdate (const std::vector<std::pair<T,T>>& dataset_curves,
           std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>& centers,
           const std::vector<int>& dataset_curves_lengths,
@@ -185,8 +184,8 @@ namespace cluster {
           std::vector<T>& costs) {
 
           // Compute new centers' lengths λ
-          // center's length equals to the avg 
-          // lengths of curves in cluster aka 
+          // center's length equals to the avg
+          // lengths of curves in cluster aka
           // λ(i) = (1/n) Sum [S(i)]
           std::vector<int> lamdas(no_clusters, 0);
           for (size_t i = 0; i < no_clusters; i++) {
@@ -195,10 +194,12 @@ namespace cluster {
               lamdas[i] += dataset_curves_lengths[center];
               n++;
             }
+            std::cout << n << std::endl;
             lamdas[i] /= n;
+            std::cout << lamdas[i] << std::endl;
           }
-          // Choose randomly a curve with length 
-          // greater or equal than lambda[i] 
+          // Choose randomly a curve with length
+          // greater or equal than lambda[i]
           // and set it as center C
           std::vector<int> rand_centers(no_clusters);
           for (size_t i = 0; i < no_clusters; i++) {
@@ -220,7 +221,7 @@ namespace cluster {
               c[i].push_back(dataset_curves[dataset_curves_offsets[rand_centers[i]] + j]);
             }
           }
-        
+
           for (size_t i = 0; i < no_clusters; i++) {
             const std::vector<std::pair<T,T>>& temp_center = c[i];
             T prev_dist{};
@@ -238,16 +239,16 @@ namespace cluster {
                   size_t pos_i = vec[j].first;
                   size_t pos_j = vec[j].second;
                   T curr_val_i = Ai[pos_i].first;
-                  T curr_val_j = Ai[pos_i].second; 
+                  T curr_val_j = Ai[pos_i].second;
                   std::pair<T,T> val = dataset_curves[dataset_curves_offsets[id] + pos_j];
                   Ai[pos_i] = std::make_pair(curr_val_i + val.first, curr_val_j + val.second);
-                  Ni[pos_i]++; 
+                  Ni[pos_i]++;
                 }
               }
               const std::vector<std::pair<T,T>> prev_center = c[i];
               c[i].clear();
               for (size_t j = 0; j < lamdas[i]; j++) {
-                c[i].push_back(std::make_pair(Ai[j].first/Ni[j],Ai[j].second/Ni[j]));
+                c[i].push_back(std::make_pair(Ai[j].first / Ni[j], Ai[j].second / Ni[j]));
               }
               const std::vector<std::pair<T,T>>& temp_center = c[i];
               T dist = metric::DTWDistance<T> (
@@ -259,7 +260,7 @@ namespace cluster {
               prev_dist = dist;
             }
           }
-          
+
           off = 0;
           std::vector<std::pair<T,T>> new_centers(no_clusters);
           std::vector<int> new_centers_offsets(no_clusters);
