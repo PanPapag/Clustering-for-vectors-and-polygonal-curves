@@ -237,6 +237,105 @@ namespace utils {
         infile.close();
         return SUCCESS;
       }
+      /** \brief WriteFile - Output prorgam results to the given output file
+        @par[in] file_name -  Relative path to the dataset
+        @par[in] init - init method
+        @par[in] assign - assignment method
+        @par[in] update - update method
+        @par[in] cluster_res - tuple of centroids, assigned vectors to clusters
+          and total clustering time
+        @par[in] silhouette_res - pair of Silhouette of each vector and the total one
+        @par[in] complete - complete parameter determines either to print
+          clusters' objects or not
+        @par[in] ids - dataset curves ids
+        @par[out] status - enumerated ExitCode provided from namespace utils
+        return: SUCCESS or FAIL
+      */
+      template <typename T, typename U>
+      int WriteFile(const std::string& file_name, const std::string& init,
+        const std::string& assign, const std::string& update,
+        std::tuple<std::tuple<
+        std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>,
+        std::vector<std::vector<size_t>>,double> cluster_res,
+        std::pair<std::vector<double>,double> silhouette_res, bool complete,
+        const std::vector<U>& ids, utils::ExitCode &status) {
+
+        // Open file
+        std::ofstream outfile;
+        outfile.open(file_name);
+        // Check if file is opened
+        if (outfile.is_open()) {
+          /* Display clustering methods */
+          if (init == "k-means++") {
+            outfile << "Initialization: K-Means++ | ";
+          } else if (init == "random") {
+            outfile << "Initialization: Random | ";
+          }
+          if (assign == "lloyd") {
+            outfile << "Assignment: Lloyd's Assignment | ";
+          } else if (assign == "range-lsh") {
+            outfile << "Assignment: By Range LSH | ";
+          }
+          if (update == "pam") {
+            outfile << "Update: PAM" << std::endl;
+          } else if (update == "mean") {
+            outfile << "Update: Mean vector" << std::endl;
+          }
+          /* Extract result info */
+          auto centroids = std::get<0>(cluster_res);
+          auto clusters = std::get<1>(cluster_res);
+          double clustering_time = std::get<2>(cluster_res);
+          // Break centroids to its componenets
+          std::vector<std::pair<T,T>> centroids_curves = std::get<0>(centroids);
+          std::vector<int> centroids_lengths = std::get<1>(centroids);
+          std::vector<int> centroids_offsets = std::get<2>(centroids);
+          /* Print for each cluster its data info */
+          int cl_idx = 0;
+          for (const auto& cluster: clusters) {
+            outfile << "CLUSTER-" << cl_idx + 1 << " {size: " << cluster.size();
+            outfile << " centroid: ";
+            for (size_t i = 0; i < centroids_lengths[cl_idx]; ++i) {
+              //outfile << centroids_curves[ce] << " ";
+            }
+            outfile << "}" << std::endl;
+            cl_idx++;
+          }
+          /* Print total clustering time as well as the Silhouette metrics */
+          outfile << "clustering_time: " << clustering_time << " seconds"
+                  << std::endl;
+          std::vector<double> s = std::get<0>(silhouette_res);
+          double s_total = std::get<1>(silhouette_res);
+          outfile << "Silhouette: {";
+          for (size_t i = 0; i < clusters.size(); ++i) {
+            outfile << "s" << i + 1 << ": " << s[i] << ", ";
+          }
+          outfile << "stotal: " << s_total << "}"<< std::endl;
+          /* If complete parameter was given print cluster explicitly */
+          if (complete == true) {
+            cl_idx = 0;
+            for (const auto& cluster: clusters) {
+              outfile << "CLUSTER-" << cl_idx + 1 << " {";
+              bool first = true;
+              for (const auto& object_idx: cluster) {
+                if (first == true) {
+                  outfile << ids[object_idx];
+                  first = false;
+                } else {
+                  outfile <<  ", " << ids[object_idx];
+                }
+              }
+              outfile << "}" << std::endl;
+              cl_idx++;
+            }
+          }
+        } else {
+          status = INVALID_OUTPUT;
+          return FAIL;
+        }
+        // close file
+        outfile.close();
+        return SUCCESS;
+      }
       /** \brief GetNoDataCurves - Get the number of curves in the dataset
         @par[in] file_name - Relative path to the dataset
         @par[out] no_vectors - Total number of curvess in the dataset to be returned

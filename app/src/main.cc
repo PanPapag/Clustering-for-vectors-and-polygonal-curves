@@ -352,6 +352,21 @@ int main(int argc, char **argv) {
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
 
+    /* Writing results to the output file */
+    start = high_resolution_clock::now();
+    std::cout << "\nWriting results to the output file.." << std::endl;
+    exit_code = utils::io::curves::WriteFile<T,U>(input_info.output_file,
+      input_info.init, input_info.assign, input_info.update, clusters_res,
+      silhouette_res, input_info.complete, dataset_curves_ids, status);
+    if (exit_code != utils::SUCCESS) {
+      utils::report::ReportError(status);
+    }
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Writing results to the output file completed successfully."
+              << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
   }
   return EXIT_SUCCESS;
 }
