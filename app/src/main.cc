@@ -23,7 +23,8 @@
 
 using namespace std::chrono;
 
-#define MAX_ITER 1 //TODO(pantelis) change it
+// NOTE These values are harcoded independently for each expirement
+#define MAX_ITER 1
 #define T double
 
 int main(int argc, char **argv) {

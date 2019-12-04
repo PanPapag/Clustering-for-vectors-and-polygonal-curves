@@ -390,7 +390,11 @@ namespace metric {
           std::next(dataset_curves.begin(),
                     dataset_curves_offsets[i] + dataset_curves_lengths[i]));
         }
-        a[it->first] = (double) a_total_dist / (cluster_curves.size() - 1);
+        if (cluster_curves.size() != 1) {
+          a[it->first] = (double) a_total_dist / (cluster_curves.size() - 1);
+        } else {
+          a[it->first] = (double) a_total_dist;
+        }
       }
       /* Iterate over every vector to compute its b_i value */
       for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {

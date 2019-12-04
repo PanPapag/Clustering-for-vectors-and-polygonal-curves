@@ -295,7 +295,8 @@ namespace utils {
             outfile << "CLUSTER-" << cl_idx + 1 << " {size: " << cluster.size();
             outfile << " centroid: ";
             for (size_t i = 0; i < centroids_lengths[cl_idx]; ++i) {
-              //outfile << centroids_curves[ce] << " ";
+              std::pair<T,T> point = centroids_curves[centroids_offsets[cl_idx] + i];
+              outfile << "(" << std::get<0>(point) << ", " << std::get<1>(point) << ")";
             }
             outfile << "}" << std::endl;
             cl_idx++;
