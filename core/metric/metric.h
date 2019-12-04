@@ -111,7 +111,7 @@ namespace metric {
   }
 
   template <typename T, typename iterator>
-  std::vector<std::pair<T,T>> BestTraversal(iterator p, iterator p_end, 
+  std::vector<std::pair<T,T>> BestTraversal(iterator p, iterator p_end,
                                             iterator q, iterator q_end) {
     T dtw_distance{};
     // save up start iterator of query curve
@@ -151,8 +151,8 @@ namespace metric {
       } else if (j == 1) {
         i -= 1;
       } else {
-        T dist = utils::min(dtw_array[(i - 1) * (M + 1) + j], 
-                dtw_array[i * (M + 1) + j - 1], 
+        T dist = utils::min(dtw_array[(i - 1) * (M + 1) + j],
+                dtw_array[i * (M + 1) + j - 1],
                 dtw_array[(i - 1) * (M + 1) + j - 1]);
         if (dtw_array[(i - 1) * (M + 1) + j] == dist) {
           i -= 1;
@@ -253,9 +253,7 @@ namespace metric {
         T min_dist = std::numeric_limits<T>::max();
         int min_id;
         // for every centroid compute manhattan distance to each other centroid
-        for (size_t j = 0; j < clusters.size(); ++j) {
-          // skip itself
-          if (i == j) continue;
+        for (size_t j = i + 1; j < clusters.size(); ++j) {
           T dist = ManhattanDistance<T>(
             std::next(centroids.begin(), i * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim),
@@ -324,7 +322,117 @@ namespace metric {
   }
   /* Implementation of Silhouette metric for curves */
   namespace curves {
-    //TODO
+    /** \brief Computes Silhouette metric
+      @par[in] dataset_curves - dataset curves coordinates
+      @par[in] dataset_curves_lengths
+      @par[in] dataset_curves_offsets
+      @par[in] no_curves - total number of curves in the dataset
+      @par[in] clusters - vector of vectors where each dataset_curve is assigned
+      @par[in] centroids_curves - centroids coordinates
+      @par[in] centroid_curves_lengths
+      @par[in] centroid_curves_offsets
+      @par[in] mapped_curves - each vector is mapped to a cluster index
+      return : a pair of average s(p) of curves in cluster i and
+        stotal = average s(p) of curves in dataset
+    */
+    template <typename T>
+    std::pair<std::vector<double>,double> Silhouette(
+      const std::vector<std::pair<T,T>>& dataset_curves,
+      const std::vector<int>& dataset_curves_lengths,
+      const std::vector<int>& dataset_curves_offsets,
+      const int& no_curves, const std::vector<std::vector<size_t>>& clusters,
+      const std::vector<std::pair<T,T>>& centroid_curves,
+      const std::vector<int>& centroid_curves_lengths,
+      const std::vector<int>& centroid_curves_offsets,
+      const std::map<int,int>& mapped_curves) {
+      /*  s(i) = (b(i) − a(i)) / max{a(i), b(i)}  */
+      std::vector<double> s(no_curves);
+      std::vector<double> a(no_curves);
+      std::vector<double> b(no_curves);
+      /*
+        Precompute closest centroid to each other centroid using
+        manhattan distance
+      */
+      std::map<int,int> closest_centroid;
+      for (size_t i = 0; i < clusters.size(); ++i) {
+        T min_dist = std::numeric_limits<T>::max();
+        int min_id;
+        // for every centroid compute manhattan distance to each other centroid
+        for (size_t j = i + 1; j < clusters.size(); ++j) {
+          T dist = DTWDistance<T>(
+          std::next(centroid_curves.begin(),centroid_curves_offsets[i]),
+          std::next(centroid_curves.begin(),
+                    centroid_curves_offsets[i] + centroid_curves_lengths[i]),
+          std::next(centroid_curves.begin(),centroid_curves_offsets[j]),
+          std::next(centroid_curves.begin(),
+                    centroid_curves_offsets[j] + centroid_curves_lengths[j]));
+          // Pick this one with the minimum manhattan distance
+          if (dist < min_dist) {
+            min_dist = dist;
+            min_id = j;
+          }
+        }
+        closest_centroid[i] = min_id;
+      }
+      /* Iterate over every vector to compute its a_i value */
+      for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {
+        /* Get all vectors' indexes in the same cluster */
+        std::vector<size_t> cluster_curves = clusters[it->second];
+        T a_total_dist{};
+        for (const auto& i: cluster_curves) {
+          // skip itself
+          if (i == it->first) continue;
+          a_total_dist += DTWDistance<T>(
+          std::next(dataset_curves.begin(),dataset_curves_offsets[it->first]),
+          std::next(dataset_curves.begin(),
+                    dataset_curves_offsets[it->first] + dataset_curves_lengths[it->first]),
+          std::next(dataset_curves.begin(),dataset_curves_offsets[i]),
+          std::next(dataset_curves.begin(),
+                    dataset_curves_offsets[i] + dataset_curves_lengths[i]));
+        }
+        a[it->first] = (double) a_total_dist / (cluster_curves.size() - 1);
+      }
+      /* Iterate over every vector to compute its b_i value */
+      for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {
+        /* Get all vectors' indexes in the closest centroid cluster */
+        std::vector<size_t> cluster_curves = clusters[closest_centroid[it->second]];
+        T b_total_dist{};
+        for (const auto& i: cluster_curves) {
+          b_total_dist += DTWDistance<T>(
+          std::next(dataset_curves.begin(),dataset_curves_offsets[it->first]),
+          std::next(dataset_curves.begin(),
+                    dataset_curves_offsets[it->first] + dataset_curves_lengths[it->first]),
+          std::next(dataset_curves.begin(),dataset_curves_offsets[i]),
+          std::next(dataset_curves.begin(),
+                    dataset_curves_offsets[i] + dataset_curves_lengths[i]));
+        }
+        b[it->first] = (double) b_total_dist / cluster_curves.size();
+      }
+      /* Iterate over every vector to compute its Silhouette value */
+      for (size_t i = 0; i < s.size(); ++i) {
+        s[i] = (b[i] - a[i]) / utils::max(a[i],b[i]);
+      }
+      /* Compute average s(p) of points in cluster i */
+      std::vector<double> s_avg(clusters.size());
+      for (size_t i = 0; i < clusters.size(); ++i) {
+        int counter = 0;
+        for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {
+          if (it->second == i) {
+            counter++;
+            s_avg[i] += s[it->first];
+          }
+        }
+        s_avg[i] /= counter;
+      }
+      /* Compute stotal = average s(p) of points in dataset */
+      double s_total{};
+      for (size_t i = 0; i < clusters.size(); ++i) {
+        s_total += s_avg[i];
+      }
+      s_total /= clusters.size();
+      // Return result as pair
+      return std::make_pair(s_avg,s_total);
+    }
   }
 }
 

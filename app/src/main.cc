@@ -23,7 +23,7 @@
 
 using namespace std::chrono;
 
-#define MAX_ITER 100
+#define MAX_ITER 1 //TODO(pantelis) change it
 #define T double
 
 int main(int argc, char **argv) {
@@ -283,8 +283,9 @@ int main(int argc, char **argv) {
 
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::curves::Cluster<T> cl{input_info.K, 5, input_info.init,
-                                   input_info.assign, input_info.update};
+    cluster::curves::Cluster<T,U> cl{input_info.K, MAX_ITER, input_info.init,
+                                     input_info.assign, input_info.update,
+                                     input_info.k, input_info.L};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;
@@ -298,8 +299,8 @@ int main(int argc, char **argv) {
     */
     start = high_resolution_clock::now();
     std::cout << "\nFitting dataset.." << std::endl;
-    cl.Fit(dataset_curves, dataset_curves_lengths,
-            dataset_curves_offsets, input_info.N);
+    cl.Fit(dataset_curves, dataset_curves_ids, dataset_curves_lengths,
+           dataset_curves_offsets, input_info.N);
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Fitting dataset completed successfully." << std::endl;
@@ -315,18 +316,42 @@ int main(int argc, char **argv) {
     std::cout << "Computing clusters completed successfully." << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
-    std::cout << std::get<2>(clusters_res) << std::endl;
+
     /* Extract info */
-    // start = high_resolution_clock::now();
-    // std::cout << "\nExtracting cluster info.." << std::endl;
-    // std::vector<T> centroids = std::get<0>(clusters_res);
-    // std::vector<std::vector<size_t>> clusters = std::get<1>(clusters_res);
-    // std::map<int,int> mapped_vectors = cl.MapToClusters(clusters);
-    // stop = high_resolution_clock::now();
-    // total_time = duration_cast<duration<double>>(stop - start);
-    // std::cout << "Extracting cluster info completed successfully." << std::endl;
-    // std::cout << "Time elapsed: " << total_time.count() << " seconds"
-    //           << std::endl;
+    start = high_resolution_clock::now();
+    std::cout << "\nExtracting cluster info.." << std::endl;
+    auto centroids = std::get<0>(clusters_res);
+    // Break centroids to its componenets
+    std::vector<std::pair<T,T>> centroids_curves = std::get<0>(centroids);
+    std::vector<int> centroids_lengths = std::get<1>(centroids);
+    std::vector<int> centroids_offsets = std::get<2>(centroids);
+    std::vector<std::vector<size_t>> clusters = std::get<1>(clusters_res);
+    // Map curves' indexes to clusters' indexes
+    std::map<int,int> mapped_curves = cl.MapToClusters(clusters);
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Extracting cluster info completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
+    /* Compute Silhouette */
+    std::pair<std::vector<double>,double> silhouette_res;
+    start = high_resolution_clock::now();
+    std::cout << "\nComputing Silhouette.." << std::endl;
+    silhouette_res = metric::curves::Silhouette<T>(dataset_curves,
+                                                   dataset_curves_lengths,
+                                                   dataset_curves_offsets,
+                                                   input_info.N, clusters,
+                                                   centroids_curves,
+                                                   centroids_lengths,
+                                                   centroids_offsets,
+                                                   mapped_curves);
+    stop = high_resolution_clock::now();
+    total_time = duration_cast<duration<double>>(stop - start);
+    std::cout << "Computing Silhouette completed successfully." << std::endl;
+    std::cout << "Time elapsed: " << total_time.count() << " seconds"
+              << std::endl;
+
   }
   return EXIT_SUCCESS;
 }

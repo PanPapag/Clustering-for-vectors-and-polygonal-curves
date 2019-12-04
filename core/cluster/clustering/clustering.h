@@ -171,7 +171,7 @@ namespace cluster {
       \brief Class Cluster representing k-means/k-medoids algorithm
       for curves
     */
-    template <typename T>
+    template <typename T, typename U>
     class Cluster {
       private:
         /* class Cluster parameters */
@@ -180,12 +180,14 @@ namespace cluster {
         std::string init;
         std::string assign;
         std::string update;
-        /* Function pointers for the algorithms to be used */
-        static constexpr auto f_init = ParkJunInit<T>;
-        static constexpr auto p_assign = LloydsAssignment<T>;
-        static constexpr auto p_update = PAMUpdate<T>;
+        /* Range-lsh parameters */
+        search::vectors::LSH<T,U> *lsh_structure;
+        double window;
+        uint8_t k;  // number of hash functions
+        uint8_t L;  // number of hash tables
         /* Dataset info */
         std::vector<std::pair<T,T>> dataset_curves;
+        std::vector<U> dataset_curves_ids;
         std::vector<int> dataset_curves_lengths;
         std::vector<int> dataset_curves_offsets;
         int no_curves;
@@ -206,8 +208,9 @@ namespace cluster {
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
           std::string init = "k-means++", std::string assign = "lloyds",
-          std::string update = "pam") : no_clusters(no_clusters),
-          max_iter(max_iter), init(init), assign(assign), update(update) {}
+          std::string update = "pam", uint8_t no_hf = 3, uint8_t no_ht = 1)
+          : no_clusters(no_clusters), max_iter(max_iter), init(init),
+          assign(assign), update(update), k(no_hf), L(no_ht)  {}
         /**
           \brief  Class Cluster default destructor
         */
@@ -218,10 +221,11 @@ namespace cluster {
 					@par[in] dco: a vector which store the offset of each curve in the dc
           @par[in] no_c : number of curves
         */
-        void Fit(const std::vector<std::pair<T,T>>& dc, const std::vector<int>& dcl,
-                const std::vector<int>& dco, const int& no_c) {
+        void Fit(const std::vector<std::pair<T,T>>& dc, const std::vector<U> dc_ids,
+          const std::vector<int>& dcl, const std::vector<int>& dco, const int& no_c) {
 
           dataset_curves = dc;
+          dataset_curves_ids = dc_ids;
           dataset_curves_lengths = dcl;
           dataset_curves_offsets = dco;
           no_curves = no_c;
@@ -236,7 +240,7 @@ namespace cluster {
         /**
           \brief Predict the closest cluster each sample in dataset belongs to
           returns a vector of centroids coordinates and a vector of vectors
-          which stores in each position the indexes of dataset_vectors assigned
+          which stores in each position the indexes of dataset_curves assigned
           in this cluster
         */
         std::tuple<std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>,
