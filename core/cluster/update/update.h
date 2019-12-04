@@ -154,7 +154,7 @@ namespace cluster {
           std::vector<int> prev_offsets = std::get<2>(centers);
           std::vector<int> prev_lengths = std::get<1>(centers);
           for (size_t i = 0; i < no_clusters; ++i) {
-            if(offsets[i] != -1) {
+            if (offsets[i] != -1) {
               new_centers_lengths[i] = dataset_curves_lengths[offsets[i]];
               for (size_t j = 0; j < new_centers_lengths[i]; ++j) {
                 new_centers.push_back(dataset_curves[dataset_curves_offsets[offsets[i]] + j]);
@@ -174,8 +174,8 @@ namespace cluster {
         \brief Lloyd's Approach for Update
       **/
       template <typename T>
-      //std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
-      void
+      std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>
+      //void
         LloydsUpdate (const std::vector<std::pair<T,T>>& dataset_curves,
           std::tuple<std::vector<std::pair<T,T>>,std::vector<int>,std::vector<int>>& centers,
           const std::vector<int>& dataset_curves_lengths,
@@ -212,41 +212,29 @@ namespace cluster {
             rand_centers[i] = lamda_curves[idx];
           }
 
-          // for(size_t i = 0; i < no_clusters; i++) {
-          //   std::cout << lamdas[i] << " " << dataset_curves_lengths[rand_centers[i]] << std::endl;
-          // }
-
           int off{};
-          std::vector<std::pair<T,T>> c;
-          std::vector<int> c_offsets(no_clusters);
-          std::vector<int> c_lengths(no_clusters);
-          for (size_t i = 0; i < no_clusters; ++i) {
-            size_t start = rand() % (dataset_curves_lengths[rand_centers[i]]-lamdas[i]);
-            c_lengths[i] = lamdas[i];
-            //std::cout << start << " " << c_lengths[i]+start << " " << dataset_curves_lengths[rand_centers[i]] << std::endl; 
-            for (size_t j = start; j < c_lengths[i]+start; ++j) {
-              c.push_back(dataset_curves[dataset_curves_offsets[rand_centers[i]] + j]);
-            }
-            c_offsets[i] = off;
-            off += c_lengths[i];
-          }
-
+          std::vector<std::vector<std::pair<T,T>>> c(no_clusters);
           for (size_t i = 0; i < no_clusters; i++) {
+            size_t start = rand() % (dataset_curves_lengths[rand_centers[i]]-lamdas[i]);
+            for (size_t j = start; j < lamdas[i]+start; j++) {
+              c[i].push_back(dataset_curves[dataset_curves_offsets[rand_centers[i]] + j]);
+            }
+          }
+        
+          for (size_t i = 0; i < no_clusters; i++) {
+            const std::vector<std::pair<T,T>>& temp_center = c[i];
+            T prev_dist{};
             while(1) {
               std::vector<std::pair<T,T>> Ai (lamdas[i],std::make_pair(0,0));
               std::vector<int> Ni (lamdas[i],0);
-              const std::vector<std::pair<T,T>>& temp_centers = c;
-              const std::vector<int>& temp_centers_offsets = c_offsets;
-              const std::vector<int>& temp_centers_lengths = c_lengths;
               for (const auto& id : clusters[i]) {
                 std::vector<std::pair<T,T>> vec = metric::BestTraversal<T>(
-                std::next(temp_centers.begin(),temp_centers_offsets[i]),
-                std::next(temp_centers.begin(),
-                          temp_centers_offsets[i] + temp_centers_lengths[i]),
+                std::next(temp_center.begin(),0),
+                std::next(temp_center.begin(),lamdas[i]),
                 std::next(dataset_curves.begin(),dataset_curves_offsets[id]),
                 std::next(dataset_curves.begin(),
                           dataset_curves_offsets[id] + dataset_curves_lengths[id]));
-                for(size_t j=0; j<vec.size(); j++) {
+                for (size_t j=0; j<vec.size(); j++) {
                   size_t pos_i = vec[j].first;
                   size_t pos_j = vec[j].second;
                   T curr_val_i = Ai[pos_i].first;
@@ -256,67 +244,35 @@ namespace cluster {
                   Ni[pos_i]++; 
                 }
               }
-            }
-          }
-
-          T prev_dist{};
-          while(1) {  
-            std::vector<std::vector<std::pair<T,T>>> A;
-            std::vector<std::vector<int>> N;
-            const std::vector<std::pair<T,T>>& temp_centers = c;
-            const std::vector<int>& temp_centers_offsets = c_offsets;
-            const std::vector<int>& temp_centers_lengths = c_lengths;
-            for (size_t i = 0; i < no_clusters; i++) {
-              std::vector<std::pair<T,T>> Ai (lamdas[i],std::make_pair(0,0));
-              std::vector<int> Ni (lamdas[i],0);
-              for (const auto& id : clusters[i]) {
-                std::vector<std::pair<T,T>> vec = metric::BestTraversal<T>(
-                std::next(temp_centers.begin(),temp_centers_offsets[i]),
-                std::next(temp_centers.begin(),
-                          temp_centers_offsets[i] + temp_centers_lengths[i]),
-                std::next(dataset_curves.begin(),dataset_curves_offsets[id]),
-                std::next(dataset_curves.begin(),
-                          dataset_curves_offsets[id] + dataset_curves_lengths[id]));
-                for(size_t j=0; j<vec.size(); j++) {
-                  size_t pos_i = vec[j].first;
-                  size_t pos_j = vec[j].second;
-                  T curr_val_i = Ai[pos_i].first;
-                  T curr_val_j = Ai[pos_i].second; 
-                  std::pair<T,T> val = dataset_curves[dataset_curves_offsets[id] + pos_j];
-                  Ai[pos_i] = std::make_pair(curr_val_i + val.first, curr_val_j + val.second);
-                  Ni[pos_i]++; 
-                }
+              const std::vector<std::pair<T,T>> prev_center = c[i];
+              c[i].clear();
+              for (size_t j = 0; j < lamdas[i]; j++) {
+                c[i].push_back(std::make_pair(Ai[j].first/Ni[j],Ai[j].second/Ni[j]));
               }
-              A.push_back(Ai);
-              N.push_back(Ni);
-            }
-            c.clear();
-            c_offsets.clear();
-            c_lengths.clear();
-            int off{};
-            for (size_t i = 0; i < no_clusters; i++) {
-              c_lengths[i] = lamdas[i];
-              for (size_t j = 0; j < c_lengths[i]; j++) {
-                c.push_back(std::make_pair(A[i][j].first/N[i][j],A[i][j].second/N[i][j]));
-              }
-              c_offsets[i] = off;
-              off += c_lengths[i];
-            }
-            T total_dist{};
-            for (size_t i = 0; i < no_clusters; i++) {
+              const std::vector<std::pair<T,T>>& temp_center = c[i];
               T dist = metric::DTWDistance<T> (
-                std::next(c.begin(),c_offsets[i]),
-                std::next(c.begin(),
-                          c_offsets[i] + c_lengths[i]),
-                std::next(temp_centers.begin(),temp_centers_offsets[i]),
-                std::next(temp_centers.begin(),
-                          temp_centers_offsets[i] + temp_centers_lengths[i]));
-              total_dist += dist;
+                std::next(prev_center.begin(),0),
+                std::next(prev_center.begin(),lamdas[i]),
+                std::next(temp_center.begin(),0),
+                std::next(temp_center.begin(),lamdas[i]));
+              if (dist*0.9 <= prev_dist) break;
+              prev_dist = dist;
             }
-            if (total_dist <= prev_dist*0.1) break;
-            prev_dist = total_dist;
           }
-          //return std::make_tuple(new_centers,new_centers_lengths,new_centers_offsets);
+          
+          off = 0;
+          std::vector<std::pair<T,T>> new_centers(no_clusters);
+          std::vector<int> new_centers_offsets(no_clusters);
+          std::vector<int> new_centers_lengths(no_clusters);
+          for (size_t i = 0; i < no_clusters; i++) {
+            new_centers_lengths[i] = lamdas[i];
+            for (size_t j = 0; j < new_centers_lengths[i]; j++) {
+              new_centers.push_back(c[i][j]);
+            }
+            new_centers_lengths[i] = off;
+            off += new_centers_lengths[i];
+          }
+          return std::make_tuple(new_centers,new_centers_lengths,new_centers_offsets);
       }
     }
   }
