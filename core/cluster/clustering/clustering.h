@@ -152,12 +152,12 @@ namespace cluster {
         */
         std::map<int,int> MapToClusters(std::vector<std::vector<size_t>> clusters) {
           std::map<int,int> map_result;
-          int cluter_idx = 0;
+          int cluster_idx = 0;
           for (auto const& cluster: clusters) {
             for (auto const& object: cluster) {
-              map_result[object] = cluter_idx;
+              map_result[object] = cluster_idx;
             }
-            cluter_idx++;
+            cluster_idx++;
           }
           return map_result;
         }
@@ -294,12 +294,12 @@ namespace cluster {
         */
         std::map<int,int> MapToClusters(std::vector<std::vector<size_t>> clusters) {
           std::map<int,int> map_result;
-          int cluter_idx = 0;
+          int cluster_idx = 0;
           for (auto const& cluster: clusters) {
             for (auto const& object: cluster) {
-              map_result[object] = cluter_idx;
+              map_result[object] = cluster_idx;
             }
-            cluter_idx++;
+            cluster_idx++;
           }
           return map_result;
         }

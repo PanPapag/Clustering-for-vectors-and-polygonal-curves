@@ -283,7 +283,11 @@ namespace metric {
             std::next(dataset_vectors.begin(), i * vectors_dim),
             std::next(dataset_vectors.begin(), i * vectors_dim + vectors_dim));
         }
-        a[it->first] = (double) a_total_dist / (cluster_vectors.size() - 1);
+        if (cluster_vectors.size() != 1) {
+          a[it->first] = (double) a_total_dist / (cluster_vectors.size() - 1);
+        } else {
+          a[it->first] = (double) a_total_dist;
+        }
       }
       /* Iterate over every vector to compute its b_i value */
       for (auto it = mapped_vectors.cbegin(); it != mapped_vectors.cend(); ++it) {
@@ -296,14 +300,18 @@ namespace metric {
             std::next(dataset_vectors.begin(), i * vectors_dim),
             std::next(dataset_vectors.begin(), i * vectors_dim + vectors_dim));
         }
-        b[it->first] = (double) b_total_dist / cluster_vectors.size();
+        if (cluster_vectors.size()) {
+          b[it->first] = (double) b_total_dist / cluster_vectors.size();
+        } else {
+          b[it->first] = (double) b_total_dist;
+        }
       }
       /* Iterate over every vector to compute its Silhouette value */
       for (size_t i = 0; i < s.size(); ++i) {
         s[i] = (b[i] - a[i]) / utils::max(a[i],b[i]);
       }
       /* Compute average s(p) of points in cluster i */
-      std::vector<double> s_avg(clusters.size());
+      std::vector<double> s_avg(clusters.size(), 0);
       for (size_t i = 0; i < clusters.size(); ++i) {
         int counter = 0;
         for (auto it = mapped_vectors.cbegin(); it != mapped_vectors.cend(); ++it) {
@@ -312,7 +320,9 @@ namespace metric {
             s_avg[i] += s[it->first];
           }
         }
-        s_avg[i] /= counter;
+        if (counter != 0) {
+          s_avg[i] /= counter;
+        }
       }
       /* Compute stotal = average s(p) of points in dataset */
       double s_total{};
@@ -394,9 +404,10 @@ namespace metric {
           std::next(dataset_curves.begin(),
                     dataset_curves_offsets[i] + dataset_curves_lengths[i]));
         }
+        //std::cout << "CLuster: " << it->second << " size: " << cluster_curves.size() << std::endl;
         if (cluster_curves.size() != 1) {
           a[it->first] = (double) a_total_dist / (cluster_curves.size() - 1);
-        } else {
+        } {
           a[it->first] = (double) a_total_dist;
         }
       }
@@ -414,14 +425,18 @@ namespace metric {
           std::next(dataset_curves.begin(),
                     dataset_curves_offsets[i] + dataset_curves_lengths[i]));
         }
-        b[it->first] = (double) b_total_dist / cluster_curves.size();
+        if (cluster_curves.size() != 0) {
+          b[it->first] = (double) b_total_dist / cluster_curves.size();
+        } else {
+          b[it->first] = (double) b_total_dist;
+        }
       }
       /* Iterate over every vector to compute its Silhouette value */
       for (size_t i = 0; i < s.size(); ++i) {
         s[i] = (b[i] - a[i]) / utils::max(a[i],b[i]);
       }
       /* Compute average s(p) of points in cluster i */
-      std::vector<double> s_avg(clusters.size());
+      std::vector<double> s_avg(clusters.size(), 0);
       for (size_t i = 0; i < clusters.size(); ++i) {
         int counter = 0;
         for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {
@@ -430,7 +445,9 @@ namespace metric {
             s_avg[i] += s[it->first];
           }
         }
-        s_avg[i] /= counter;
+        if (counter != 0) {
+          s_avg[i] /= counter;
+        }
       }
       /* Compute stotal = average s(p) of points in dataset */
       double s_total{};
