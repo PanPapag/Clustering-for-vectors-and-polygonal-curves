@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <gtest/gtest.h>
 
 #include "../../core/cluster/assignment/assignment.h"
 #include "../../core/cluster/initialization/initialization.h"
@@ -24,7 +25,7 @@
 using namespace std::chrono;
 
 // NOTE These values are harcoded independently for each expirement
-#define MAX_ITER 1
+#define MAX_ITER 100
 #define T double
 
 int main(int argc, char **argv) {
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
   std::cout << "Reading configuration file completed successfully." << std::endl;
   std::cout << "Time elapsed: " << total_time.count() << " seconds"
             << std::endl;
-
+  
   if (clustering_object == "vectors") {
     #define U std::string
     /**

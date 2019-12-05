@@ -254,6 +254,7 @@ namespace cluster {
               d_array[assigned_cluster].push_back(i);
               assign_costs[assigned_cluster] += min_dist;
             }
+
             return std::make_tuple(d_array,assign_costs);
           }
       }

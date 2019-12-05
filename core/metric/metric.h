@@ -147,20 +147,20 @@ namespace metric {
     std::vector<std::pair<T,T>> ret_vec;
     while(i>1 && j>1) {
       if (i == 1) {
-        j -= 1;
+        j--;
       } else if (j == 1) {
-        i -= 1;
+        i--;
       } else {
         T dist = utils::min(dtw_array[(i - 1) * (M + 1) + j],
                 dtw_array[i * (M + 1) + j - 1],
                 dtw_array[(i - 1) * (M + 1) + j - 1]);
         if (dtw_array[(i - 1) * (M + 1) + j] == dist) {
-          i -= 1;
-        } else if (dtw_array[i * (M + 1) + j - 1]) {
-          j -= 1;
+          i--;
+        } else if (dtw_array[i * (M + 1) + j - 1] == dist) {
+          j--;
         } else {
-          i -= 1;
-          j -= 1;
+          i--;
+          j--;
         }
       }
       ret_vec.push_back(std::make_pair(i-1,j-1));
@@ -168,6 +168,10 @@ namespace metric {
     ret_vec.push_back(std::make_pair(0,0));
     delete[] dtw_array;
     std::reverse(ret_vec.begin(), ret_vec.end());
+    // for(auto& i:ret_vec) {
+    //   std::cout << i.first << " ";
+    // }
+    // std::cout << std::endl;
     return ret_vec;
   }
 
