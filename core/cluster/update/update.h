@@ -190,8 +190,8 @@ namespace cluster {
           std::vector<int> lamdas(no_clusters, 0);
           for (size_t i = 0; i < no_clusters; i++) {
             int n = 0;
-            for (const auto& center : clusters[i]) {
-              lamdas[i] += dataset_curves_lengths[center];
+            for (const auto& id : clusters[i]) {
+              lamdas[i] += dataset_curves_lengths[id];
               n++;
             }
             if (n != 0) {
@@ -205,9 +205,9 @@ namespace cluster {
           std::vector<int> rand_centers(no_clusters,-1);
           for (size_t i = 0; i < no_clusters; i++) {
             std::vector<int> lamda_curves;
-            for (const auto& center : clusters[i]) {
-              if (dataset_curves_lengths[center] >= lamdas[i]) {
-                lamda_curves.push_back(center);
+            for (const auto& id : clusters[i]) {
+              if (dataset_curves_lengths[id] >= lamdas[i]) {
+                lamda_curves.push_back(id);
               }
             }
             if (lamda_curves.size() != 0) {
@@ -244,11 +244,13 @@ namespace cluster {
           // For each curve in dataset perform DTW distance
           // with initial curve - center to find best traversal
           // Construct a new curve center using the average value 
-          // points related to each DTW path 
+          // points related to each DTW path
+          std::vector<std::vector<std::pair<T,T>>> dba(no_clusters); 
           for (size_t i = 0; i < no_clusters; i++) {
-            const std::vector<std::pair<T,T>>& temp_center = c[i];
-            for(int times=0; times<100; times++) {
+            std::vector<std::pair<T,T>> i_center = c[i];
+            while(1) {
               if (clusters[i].size() == 0) break;
+              const std::vector<std::pair<T,T>>& temp_center = i_center;
               // stores the sum of points assosiated with (i) point of
               // center given by dtw dist.
               std::vector<std::pair<T,T>> Ai (lamdas[i],std::make_pair(0,0));
@@ -277,42 +279,39 @@ namespace cluster {
               }
               // generate new curve center by calculating the avg
               // value of each A[i]
-              const std::vector<std::pair<T,T>> prev_center = c[i];
-              //c[i].clear();
               std::vector<std::pair<T,T>> new_c;
-              //std::cout << c[i][0].first << std::endl;
               for (size_t j = 0; j < lamdas[i]; j++) {
-                if (Ni[j] != 0)
+                if (Ni[j] != 0) {
                   new_c.push_back(std::make_pair(Ai[j].first / Ni[j], Ai[j].second / Ni[j]));
-                else {
-                  //std::cout << "mpike" << std::endl;
+                } else {
                   new_c.push_back(std::make_pair(Ai[j].first, Ai[j].second));
                 }
               }
-              c[i] = new_c;
-              const std::vector<std::pair<T,T>>& temp_center = new_c;
+              const std::vector<std::pair<T,T>>& new_center = new_c;
               // stop iteration when the dist between
               // C and C' is too small
               T dist = metric::DTWDistance<T> (
-                std::next(prev_center.begin(),0),
-                std::next(prev_center.begin(),prev_center.size()),
                 std::next(temp_center.begin(),0),
-                std::next(temp_center.begin(),temp_center.size()));
-              if (dist <= 0.5) break;
+                std::next(temp_center.begin(),temp_center.size()),
+                std::next(new_center.begin(),0),
+                std::next(new_center.begin(),new_center.size()));
+              i_center = new_c;
+              if (dist <= 0.1) break;
             }
+            dba[i] = i_center;
           }
 
-          off = 0;
+          int offset{};
           std::vector<std::pair<T,T>> new_centers(no_clusters);
           std::vector<int> new_centers_offsets(no_clusters);
           std::vector<int> new_centers_lengths(no_clusters);
           for (size_t i = 0; i < no_clusters; i++) {
-            new_centers_lengths[i] = c[i].size();
+            new_centers_lengths[i] = dba[i].size();
             for (size_t j = 0; j < new_centers_lengths[i]; j++) {
-              new_centers.push_back(c[i][j]);
+              new_centers.push_back(dba[i][j]);
             }
-            new_centers_offsets[i] = off;
-            off += new_centers_lengths[i];
+            new_centers_offsets[i] = offset;
+            offset += new_centers_lengths[i];
           }
 
           return std::make_tuple(new_centers,new_centers_lengths,new_centers_offsets);
