@@ -130,7 +130,10 @@ namespace cluster {
         const int& no_curves, const int& no_clusters) {
 
         // Declare 2D d array which holds all distances between the curves
-        T d_array[no_curves][no_curves];
+        //T d_array[no_curves][no_curves];
+        T** d_array = new T*[no_curves];
+        for(int i = 0; i < no_curves; ++i)
+          d_array[i] = new T[no_curves];
         // Calculate all distances using ManhattanDistance
         for (size_t i = 0; i < no_curves; ++i) {
           for (size_t j = 0; j < no_curves; ++j) {
@@ -177,6 +180,9 @@ namespace cluster {
           offset += centroids_lengths[i];
         }
         // Return Initialized centroids
+        for(int i = 0; i < no_curves; ++i)
+          delete[] d_array[i];
+        delete[] d_array;
         return std::make_tuple(centroids,centroids_lengths,centroids_offsets);
       }
 

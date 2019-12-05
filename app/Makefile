@@ -1,11 +1,8 @@
 TARGET_EXEC ?= cluster
 
-GOOGLE_TEST_LIB = gtest
-GOOGLE_TEST_INCLUDE = /usr/local/include
-
 CC = g++
-CC_FLAGS = -w -g3 -O3 -std=c++11 -c -Wall -I $(GOOGLE_TEST_INCLUDE)
-LD_FLAGS = -L /usr/local/lib -l $(GOOGLE_TEST_LIB) -l pthread
+CC_FLAGS = -w -g3 -std=c++11 -c -Wall
+LD_FLAGS = -l pthread
 
 BUILD_DIR ?= ./build
 SRC_DIRS ?= ./src

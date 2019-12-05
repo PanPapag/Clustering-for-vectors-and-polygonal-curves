@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 #include <queue>
-#include <gtest/gtest.h>
 
 namespace utils {
   /** \brief Computes modular exponentiation
