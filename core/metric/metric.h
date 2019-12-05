@@ -257,7 +257,8 @@ namespace metric {
         T min_dist = std::numeric_limits<T>::max();
         int min_id;
         // for every centroid compute manhattan distance to each other centroid
-        for (size_t j = i + 1; j < clusters.size(); ++j) {
+        for (size_t j = 0; j < clusters.size(); ++j) {
+          if (i == j) continue;
           T dist = ManhattanDistance<T>(
             std::next(centroids.begin(), i * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim),
@@ -372,7 +373,8 @@ namespace metric {
         T min_dist = std::numeric_limits<T>::max();
         int min_id;
         // for every centroid compute manhattan distance to each other centroid
-        for (size_t j = i + 1; j < clusters.size(); ++j) {
+        for (size_t j = 0; j < clusters.size(); ++j) {
+          if (i == j) continue;
           T dist = DTWDistance<T>(
           std::next(centroid_curves.begin(),centroid_curves_offsets[i]),
           std::next(centroid_curves.begin(),
@@ -388,6 +390,7 @@ namespace metric {
         }
         closest_centroid[i] = min_id;
       }
+
       /* Iterate over every vector to compute its a_i value */
       for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {
         /* Get all curves' indexes in the same cluster */
