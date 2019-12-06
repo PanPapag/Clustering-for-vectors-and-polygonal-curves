@@ -42,7 +42,7 @@ namespace utils {
     @par int b - modulo divisor
   */
   constexpr int mod(int a, int b) { return (a % b + b) % b; }
-  
+
   /**
     \brief Compute mean of the points given in R^d
   */
