@@ -189,7 +189,7 @@ namespace cluster {
       std::vector<std::vector<size_t>> d_array(no_clusters);
       std::vector<T> assign_costs(no_clusters, 0);
       /* Execute step 1 */
-      while (no_vectors_assigned <= 0.95 * no_vectors && radius <= max_dist) {
+      while (no_vectors_assigned <= 0.65 * no_vectors && radius <= max_dist) {
         /* Execute range search for each centroid */
         for (size_t i = 0; i < no_clusters; ++i) {
           auto range_results = lsh->RadiusNearestNeighbor(centroids, i, radius);
