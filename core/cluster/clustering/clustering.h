@@ -227,11 +227,7 @@ namespace cluster {
         /**
           \brief  Class Cluster default destructor
         */
-<<<<<<< HEAD
-        ~Cluster() { delete window;}
-=======
         ~Cluster() {}
->>>>>>> b6d557f48a630c682b26a7896821191992bc5340
         /** \brief Fit method stores dataset info for clustering
           @par[in] dc : curves given from dataset
 					@par[in] dcl: a vector which store the length of each curve in the dataset
