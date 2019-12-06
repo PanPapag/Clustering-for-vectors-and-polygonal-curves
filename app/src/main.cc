@@ -162,7 +162,8 @@ int main(int argc, char **argv) {
      */
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::vectors::Cluster<T,U> cl{input_info.K, MAX_ITER, input_info.init,
+    cluster::vectors::Cluster<T,U> *cl = new cluster::vectors::Cluster<T,U> 
+                                      {input_info.K, MAX_ITER, input_info.init,
                                       input_info.assign, input_info.update,
                                       input_info.k, input_info.L};
     stop = high_resolution_clock::now();
@@ -178,7 +179,7 @@ int main(int argc, char **argv) {
     */
     start = high_resolution_clock::now();
     std::cout << "\nFitting dataset.." << std::endl;
-    cl.Fit(dataset_vectors, dataset_vectors_ids, input_info.N, input_info.D);
+    cl->Fit(dataset_vectors, dataset_vectors_ids, input_info.N, input_info.D);
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Fitting dataset completed successfully." << std::endl;
@@ -188,7 +189,7 @@ int main(int argc, char **argv) {
     /* Compute clusters running specified algorithm */
     start = high_resolution_clock::now();
     std::cout << "\nComputing clusters.." << std::endl;
-    auto clusters_res = cl.Predict();
+    auto clusters_res = cl->Predict();
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Computing clusters completed successfully." << std::endl;
@@ -200,7 +201,7 @@ int main(int argc, char **argv) {
     std::cout << "\nExtracting cluster info.." << std::endl;
     std::vector<T> centroids = std::get<0>(clusters_res);
     std::vector<std::vector<size_t>> clusters = std::get<1>(clusters_res);
-    std::map<int,int> mapped_vectors = cl.MapToClusters(clusters);
+    std::map<int,int> mapped_vectors = cl->MapToClusters(clusters);
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Extracting cluster info completed successfully." << std::endl;
@@ -236,7 +237,8 @@ int main(int argc, char **argv) {
               << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
-
+    delete cl;
+    
   } else if (clustering_object == "curves") {
     #define U int
     /* Preprocessing input file to get number of dataset curves */
@@ -285,7 +287,8 @@ int main(int argc, char **argv) {
 
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::curves::Cluster<T,U> cl{input_info.K, MAX_ITER, input_info.init,
+    cluster::curves::Cluster<T,U> *cl = new cluster::curves::Cluster<T,U>
+                                    {input_info.K, MAX_ITER, input_info.init,
                                      input_info.assign, input_info.update,
                                      input_info.k, input_info.L};
     stop = high_resolution_clock::now();
@@ -301,7 +304,7 @@ int main(int argc, char **argv) {
     */
     start = high_resolution_clock::now();
     std::cout << "\nFitting dataset.." << std::endl;
-    cl.Fit(dataset_curves, dataset_curves_ids, dataset_curves_lengths,
+    cl->Fit(dataset_curves, dataset_curves_ids, dataset_curves_lengths,
            dataset_curves_offsets, input_info.N);
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
@@ -312,7 +315,7 @@ int main(int argc, char **argv) {
     /* Compute clusters running specified algorithm */
     start = high_resolution_clock::now();
     std::cout << "\nComputing clusters.." << std::endl;
-    auto clusters_res = cl.Predict();
+    auto clusters_res = cl->Predict();
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Computing clusters completed successfully." << std::endl;
@@ -329,7 +332,7 @@ int main(int argc, char **argv) {
     std::vector<int> centroids_offsets = std::get<2>(centroids);
     std::vector<std::vector<size_t>> clusters = std::get<1>(clusters_res);
     // Map curves' indexes to clusters' indexes
-    std::map<int,int> mapped_curves = cl.MapToClusters(clusters);
+    std::map<int,int> mapped_curves = cl->MapToClusters(clusters);
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Extracting cluster info completed successfully." << std::endl;
@@ -369,6 +372,7 @@ int main(int argc, char **argv) {
               << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
+    //delete cl;
   }
   return EXIT_SUCCESS;
 }

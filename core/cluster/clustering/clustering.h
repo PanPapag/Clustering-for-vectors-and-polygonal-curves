@@ -65,7 +65,7 @@ namespace cluster {
         /**
           \brief  Class Cluster destructor
         */
-        ~Cluster() { delete lsh_structure; }
+        ~Cluster() {}
         /** \brief Fit method stores dataset info for clustering
           @par[in] dv : vectors given from dataset
           @par[in] no_v : number of vectors

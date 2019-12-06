@@ -235,7 +235,7 @@ namespace cluster {
             T total_cost{};
             for (size_t i = 0; i < no_curves; i++) {
               T min_dist = std::numeric_limits<T>::max();
-              size_t assigned_cluster{};
+              std::vector<T> dists(no_clusters);
               for (size_t j = 0; j < no_clusters; j++) {
                 T dist = metric::DTWDistance<T> (
                   std::next(dataset_curves.begin(),dataset_curves_offsets[i]),
@@ -245,14 +245,16 @@ namespace cluster {
                   std::next(centroid_curves.begin(),
                             centroid_offsets[j] + centroid_lengths[j]));
                 // Store minimum dist from clusters
-                if (dist < min_dist) {
-                  min_dist = dist;
-                  assigned_cluster = j;
-                }
+                // if (dist < min_dist || j==0) {
+                //   min_dist = dist;
+                //   assigned_cluster = j;
+                // }
+                dists[j] = dist;
               }
+              int assigned_cluster = distance(dists.begin(),min_element(dists.begin(),dists.end()));
               // Store id to closest cluster
               d_array[assigned_cluster].push_back(i);
-              assign_costs[assigned_cluster] += min_dist;
+              assign_costs[assigned_cluster] += *min_element(dists.begin(),dists.end());
             }
 
             return std::make_tuple(d_array,assign_costs);

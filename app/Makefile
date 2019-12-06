@@ -1,7 +1,7 @@
 TARGET_EXEC ?= cluster
 
 CC = g++
-CC_FLAGS = -w -g3 -std=c++11 -c -Wall
+CC_FLAGS = -w -g3 -O3 -std=c++11 -c -Wall
 LD_FLAGS = -l pthread
 
 BUILD_DIR ?= ./build
