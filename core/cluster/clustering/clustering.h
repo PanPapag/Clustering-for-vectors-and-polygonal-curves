@@ -66,7 +66,9 @@ namespace cluster {
         /**
           \brief default Class Cluster destructor
         */
-        ~Cluster() = default;
+        ~Cluster() {
+          if (assign == "range-lsh") delete lsh_structure;
+        };
         /** \brief Fit method stores dataset info for clustering
           @par[in] dv : vectors given from dataset
           @par[in] no_v : number of vectors
@@ -132,6 +134,7 @@ namespace cluster {
 						}
 
             /* Update step */
+            auto prev_centroids = centroids;
 						if (update == "mean") {
 							centroids = LloydsUpdate(dataset_vectors, centroids,
 																		 	 no_vectors, vectors_dim,
@@ -141,6 +144,7 @@ namespace cluster {
 																	  no_vectors, vectors_dim, no_clusters,
 																	  std::get<0>(clusters), std::get<1>(clusters));
 						}
+            if(prev_centroids == centroids) break;
           }
           /* End time measuring */
           auto stop = high_resolution_clock::now();
@@ -224,7 +228,9 @@ namespace cluster {
         /**
           \brief  Class Cluster default destructor
         */
-        ~Cluster() {}
+        ~Cluster() {
+          if (assign == "range-lsh") delete[] window;
+        }
         /** \brief Fit method stores dataset info for clustering
           @par[in] dc : curves given from dataset
 					@par[in] dcl: a vector which store the length of each curve in the dataset
