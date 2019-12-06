@@ -35,7 +35,7 @@ namespace cluster {
 
         // Declare 1D vector which holds new best centers ids
         // We initialize vector with -1 in case centers remain the same
-        std::vector<ssize_t> new_centers_offsets(no_clusters,-1);
+        std::vector<ssize_t> new_centers_offsets(no_clusters);
         // Declare 1D vector which holds new best centers
         std::vector<T> new_centers(no_clusters * vectors_dim);
         for (size_t i = 0; i < no_clusters; i++) {
@@ -53,7 +53,7 @@ namespace cluster {
               cost += dist;
             }
             // update costs and new centers' ids
-            if (cost < costs[i]) {
+            if (cost <= costs[i]) {
               costs[i] = cost;
               new_centers_offsets[i] = selected_center;
             }
@@ -61,12 +61,7 @@ namespace cluster {
         }
         for (size_t i = 0; i < no_clusters; ++i) {
           for (size_t j = 0; j < vectors_dim; ++j) {
-            if (new_centers_offsets[i] != -1) {
-              new_centers[i * vectors_dim + j] = dataset_vectors[new_centers_offsets[i] * vectors_dim + j];
-            } else {
-              // center remained the same
-              new_centers[i * vectors_dim + j] = centers[i * vectors_dim + j];
-            }
+            new_centers[i * vectors_dim + j] = dataset_vectors[new_centers_offsets[i] * vectors_dim + j]; 
           }
         }
         return new_centers;
@@ -121,9 +116,8 @@ namespace cluster {
 
           // Declare 2D vector which holds all curves
           // to their assigned cluster
-          std::vector<int> offsets(no_clusters,-1);
+          std::vector<int> offsets(no_clusters);
           // Calculate all distances using DTW Distance
-          T total_cost{};
           for (size_t i = 0; i < no_clusters; i++) {
             for (const auto& center : clusters[i]) {
               T cost{};
@@ -139,31 +133,20 @@ namespace cluster {
                 cost += dist;
               }
               // Store minimum dist from clusters
-              if (cost < costs[i]) {
+              if (cost <= costs[i]) {
                 costs[i] = cost;
                 offsets[i] = center;
               }
             }
           }
-
           int off{};
           std::vector<std::pair<T,T>> new_centers;
           std::vector<int> new_centers_offsets(no_clusters);
           std::vector<int> new_centers_lengths(no_clusters);
-          std::vector<std::pair<T,T>> prev_centers = std::get<0>(centers);
-          std::vector<int> prev_offsets = std::get<2>(centers);
-          std::vector<int> prev_lengths = std::get<1>(centers);
           for (size_t i = 0; i < no_clusters; ++i) {
-            if (offsets[i] != -1) {
-              new_centers_lengths[i] = dataset_curves_lengths[offsets[i]];
-              for (size_t j = 0; j < new_centers_lengths[i]; ++j) {
-                new_centers.push_back(dataset_curves[dataset_curves_offsets[offsets[i]] + j]);
-              }
-            } else {
-              new_centers_lengths[i] = prev_lengths[i];
-              for (size_t j = 0; j < new_centers_lengths[i]; ++j) {
-                new_centers.push_back(prev_centers[prev_offsets[i] + j]);
-              }
+            new_centers_lengths[i] = dataset_curves_lengths[offsets[i]];
+            for (size_t j = 0; j < new_centers_lengths[i]; ++j) {
+              new_centers.push_back(dataset_curves[dataset_curves_offsets[offsets[i]] + j]);
             }
             new_centers_offsets[i] = off;
             off += new_centers_lengths[i];

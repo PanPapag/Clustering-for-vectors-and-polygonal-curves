@@ -58,7 +58,7 @@ namespace cluster {
           @par update : {‘mean’, ‘pam’}
             Method for update, defaults to 'mean'
         */
-        Cluster(int no_clusters = 8, int max_iter = 300,
+        Cluster(int no_clusters = 8, int max_iter = 1,
           std::string init = "random", std::string assign = "lloyd",
           std::string update = "mean", uint8_t no_hf = 3, uint8_t no_ht = 5)
           : no_clusters(no_clusters), max_iter(max_iter), init(init),
@@ -83,14 +83,17 @@ namespace cluster {
             to corresponding lsh structures
           */
           if (assign == "range-lsh") {
+            std::cout << "Mean" << std::endl;
             window = utils::ComputeMean<T>(dataset_vectors,
                                            vectors_dim, no_vectors);
             /* Index no_vectors points into L hashtables */
+            std::cout << "LSH" << std::endl;
             lsh_structure = new search::vectors::LSH<T,U>(k, L, vectors_dim,
                                                           no_vectors, window,
                                                           dataset_vectors,
                                                           dataset_vectors_ids);
             /* Map each id from dataset_vectors_ids to its index */
+            std::cout << "Map" << std::endl;
             for (size_t i = 0; i < no_vectors; ++i) {
               map_id_to_index[dataset_vectors_ids[i]] = i;
             }
@@ -224,7 +227,11 @@ namespace cluster {
         /**
           \brief  Class Cluster default destructor
         */
+<<<<<<< HEAD
         ~Cluster() { delete window;}
+=======
+        ~Cluster() {}
+>>>>>>> b6d557f48a630c682b26a7896821191992bc5340
         /** \brief Fit method stores dataset info for clustering
           @par[in] dc : curves given from dataset
 					@par[in] dcl: a vector which store the length of each curve in the dataset

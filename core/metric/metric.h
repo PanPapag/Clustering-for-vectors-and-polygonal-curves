@@ -435,7 +435,7 @@ namespace metric {
       }
       /* Iterate over every vector to compute its Silhouette value */
       for (size_t i = 0; i < s.size(); ++i) {
-        s[i] = (b[i] - a[i]) / utils::max(a[i],b[i]);
+        s[i] = (a[i] - b[i]) / utils::max(a[i],b[i]);
       }
       /* Compute average s(p) of points in cluster i */
       std::vector<double> s_avg(clusters.size(), 0);
