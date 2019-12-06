@@ -213,14 +213,13 @@ namespace cluster {
               // Vector has assigned to some other centroid before
               // In this case compare its old distance with the new one
               int centroid_assigned = assigned_vector_to_centroid[v_index];
-              T prev_dist = metric::ManhattanDistance<T>(
+              T prev_dist = metric::SquaredEuclidianDistance<T>(
                 std::next(dataset_vectors.begin(), v_index * vectors_dim),
                 std::next(centroids.begin(), centroid_assigned * vectors_dim),
                 std::next(centroids.begin(), centroid_assigned * vectors_dim + vectors_dim));
               if (v_dist < prev_dist) {
                 d_array[i].push_back(v_index);
                 // Substuct previous dist and add the one
-                assign_costs[i] -= prev_dist;
                 assign_costs[i] += v_dist;
                 // Update structures
                 assigned_vector_to_centroid[v_index] = i;
@@ -238,7 +237,7 @@ namespace cluster {
           T min_dist = std::numeric_limits<T>::max();
           int min_centroid_index{};
           for (size_t j = 0; j < no_clusters; ++j) {
-            T dist = metric::ManhattanDistance<T>(
+            T dist = metric::SquaredEuclidianDistance<T>(
               std::next(dataset_vectors.begin(), i * vectors_dim),
               std::next(centroids.begin(), j * vectors_dim),
               std::next(centroids.begin(), j * vectors_dim + vectors_dim));

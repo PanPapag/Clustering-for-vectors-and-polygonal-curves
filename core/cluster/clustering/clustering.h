@@ -83,17 +83,14 @@ namespace cluster {
             to corresponding lsh structures
           */
           if (assign == "range-lsh") {
-            std::cout << "Mean" << std::endl;
             window = utils::ComputeMean<T>(dataset_vectors,
                                            vectors_dim, no_vectors);
             /* Index no_vectors points into L hashtables */
-            std::cout << "LSH" << std::endl;
             lsh_structure = new search::vectors::LSH<T,U>(k, L, vectors_dim,
                                                           no_vectors, window,
                                                           dataset_vectors,
                                                           dataset_vectors_ids);
             /* Map each id from dataset_vectors_ids to its index */
-            std::cout << "Map" << std::endl;
             for (size_t i = 0; i < no_vectors; ++i) {
               map_id_to_index[dataset_vectors_ids[i]] = i;
             }
