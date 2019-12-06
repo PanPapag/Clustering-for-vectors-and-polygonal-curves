@@ -175,21 +175,21 @@ namespace cluster {
             std::next(centroids.begin(), i * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim + vectors_dim));
-          if (dist < min_dist) {
+          if (dist < min_dist || min_dist == std::numeric_limits<T>::min()) {
             min_dist = dist;
           }
-          if (dist > max_dist) {
+          if (dist > max_dist | max_dist == std::numeric_limits<T>::max()) {
             max_dist = dist;
           }
         }
       }
-      double radius = (double) min_dist / 2;
+      double radius = (double) (min_dist / 2) + (max_dist / 10);
       // Declare 2D vector which holds all vectors
       // to their assigned cluster.
       std::vector<std::vector<size_t>> d_array(no_clusters);
       std::vector<T> assign_costs(no_clusters, 0);
       /* Execute step 1 */
-      while (no_vectors_assigned <= 0.65 * no_vectors && radius <= max_dist) {
+      while (radius <= max_dist) {
         /* Execute range search for each centroid */
         for (size_t i = 0; i < no_clusters; ++i) {
           auto range_results = lsh->RadiusNearestNeighbor(centroids, i, radius);

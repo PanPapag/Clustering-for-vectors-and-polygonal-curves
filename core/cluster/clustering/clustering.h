@@ -224,7 +224,7 @@ namespace cluster {
         /**
           \brief  Class Cluster default destructor
         */
-        ~Cluster() { delete [] window;}
+        ~Cluster() { delete window;}
         /** \brief Fit method stores dataset info for clustering
           @par[in] dc : curves given from dataset
 					@par[in] dcl: a vector which store the length of each curve in the dataset
@@ -336,6 +336,7 @@ namespace cluster {
                                         no_clusters, &lsh_structures[i],
                                         map_id_to_index);
               }
+              clusters = clusters_array[L_grid - 1];
 						}
             /* Update step */
 						if (update == "mean") {
