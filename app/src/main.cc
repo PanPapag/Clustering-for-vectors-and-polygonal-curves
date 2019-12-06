@@ -24,7 +24,7 @@
 using namespace std::chrono;
 
 // NOTE These values are harcoded independently for each expirement
-#define MAX_ITER 
+#define MAX_ITER 100
 #define T double
 
 int main(int argc, char **argv) {
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
      */
     start = high_resolution_clock::now();
     std::cout << "\nBuilding Cluster class.." << std::endl;
-    cluster::vectors::Cluster<T,U> *cl = new cluster::vectors::Cluster<T,U> 
+    cluster::vectors::Cluster<T,U> *cl = new cluster::vectors::Cluster<T,U>
                                       {input_info.K, MAX_ITER, input_info.init,
                                       input_info.assign, input_info.update,
                                       input_info.k, input_info.L};
@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
     delete cl;
-    
+
   } else if (clustering_object == "curves") {
     #define U int
     /* Preprocessing input file to get number of dataset curves */

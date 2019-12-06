@@ -175,10 +175,10 @@ namespace cluster {
             std::next(centroids.begin(), i * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim + vectors_dim));
-          if (dist < min_dist || min_dist == std::numeric_limits<T>::min()) {
+          if (dist < min_dist && !std::isinf(dist)) {
             min_dist = dist;
           }
-          if (dist > max_dist | max_dist == std::numeric_limits<T>::max()) {
+          if (dist > max_dist && !std::isinf(dist)) {
             max_dist = dist;
           }
         }
@@ -232,12 +232,11 @@ namespace cluster {
         /* Increase radius (Multiply by 2) */
         radius *= 2;
       }
-
       /* For each unassigned vector compute its distance to each centroid */
       for (size_t i = 0; i < no_vectors; ++i) {
         if (assigned_vector_to_centroid[i] == -1) {
           T min_dist = std::numeric_limits<T>::max();
-          int min_centroid_index;
+          int min_centroid_index{};
           for (size_t j = 0; j < no_clusters; ++j) {
             T dist = metric::ManhattanDistance<T>(
               std::next(dataset_vectors.begin(), i * vectors_dim),
@@ -248,11 +247,18 @@ namespace cluster {
               min_centroid_index = j;
             }
           }
-          d_array[min_centroid_index].push_back(i);
-          assign_costs[min_centroid_index] += min_dist;
-          // Update structures
-          assigned_vector_to_centroid[i] = min_centroid_index;
-          no_vectors_assigned++;
+          if (!std::isinf(min_dist)) {
+            d_array[min_centroid_index].push_back(i);
+            assign_costs[min_centroid_index] += min_dist;
+            // Update structures
+            assigned_vector_to_centroid[i] = min_centroid_index;
+            no_vectors_assigned++;
+          } else {
+            d_array[min_centroid_index].push_back(i);
+            // Update structures
+            assigned_vector_to_centroid[i] = min_centroid_index;
+            no_vectors_assigned++;
+          }
         }
       }
       // return a tuple of the result
