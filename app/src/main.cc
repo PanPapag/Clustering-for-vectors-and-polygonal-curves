@@ -371,7 +371,7 @@ int main(int argc, char **argv) {
               << std::endl;
     std::cout << "Time elapsed: " << total_time.count() << " seconds"
               << std::endl;
-    //delete cl;
+    delete cl;
   }
   return EXIT_SUCCESS;
 }
