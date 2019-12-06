@@ -8,7 +8,6 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-#include <gtest/gtest.h>
 
 #include "../../core/cluster/assignment/assignment.h"
 #include "../../core/cluster/initialization/initialization.h"
@@ -95,7 +94,7 @@ int main(int argc, char **argv) {
   std::cout << "Reading configuration file completed successfully." << std::endl;
   std::cout << "Time elapsed: " << total_time.count() << " seconds"
             << std::endl;
-  
+
   if (clustering_object == "vectors") {
     #define U std::string
     /**
@@ -290,7 +289,7 @@ int main(int argc, char **argv) {
     cluster::curves::Cluster<T,U> *cl = new cluster::curves::Cluster<T,U>
                                     {input_info.K, MAX_ITER, input_info.init,
                                      input_info.assign, input_info.update,
-                                     input_info.k, input_info.L};
+                                     input_info.k, input_info.L, input_info.grids};
     stop = high_resolution_clock::now();
     total_time = duration_cast<duration<double>>(stop - start);
     std::cout << "Building Cluster class completed successfully." << std::endl;

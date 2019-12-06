@@ -7,6 +7,7 @@
 
 #include "../../search/lsh.h"
 #include "../../utils/utils.h"
+#include "../../vectorization/vectorization.h"
 #include "../initialization/initialization.h"
 #include "../assignment/assignment.h"
 #include "../update/update.h"
@@ -61,11 +62,11 @@ namespace cluster {
           std::string init = "random", std::string assign = "lloyd",
           std::string update = "mean", uint8_t no_hf = 3, uint8_t no_ht = 5)
           : no_clusters(no_clusters), max_iter(max_iter), init(init),
-          assign(assign), update(update), k(no_hf), L(no_ht)  {}
+          assign(assign), update(update), k(no_hf), L(no_ht) {}
         /**
-          \brief  Class Cluster destructor
+          \brief default Class Cluster destructor
         */
-        ~Cluster() {}
+        ~Cluster() = default;
         /** \brief Fit method stores dataset info for clustering
           @par[in] dv : vectors given from dataset
           @par[in] no_v : number of vectors
@@ -123,7 +124,8 @@ namespace cluster {
 							clusters = LloydsAssignment(dataset_vectors, centroids,
 																					no_vectors, vectors_dim, no_clusters);
 						} else if (assign == "range-lsh") {
-              clusters = ReverseAssignment<T,U>(dataset_vectors, dataset_vectors_ids,
+              clusters = cluster::assignment::
+                          ReverseAssignment<T,U>(dataset_vectors, dataset_vectors_ids,
                                                 centroids, no_vectors, vectors_dim,
                                                 no_clusters, lsh_structure,
                                                 map_id_to_index);
@@ -180,17 +182,24 @@ namespace cluster {
         std::string init;
         std::string assign;
         std::string update;
-        /* Range-lsh parameters */
-        search::vectors::LSH<T,U> *lsh_structure;
-        double window;
-        uint8_t k;  // number of hash functions
-        uint8_t L;  // number of hash tables
+        /* Range-LSH and Grid parameters for vectorization */
+        std::vector<vectorization::Grid<T>> grids;
+        std::vector<std::vector<double>> L_grid_dataset_vectors;
+        std::vector<search::vectors::LSH<T,U>> lsh_structures;
+        uint8_t k;
+        uint8_t L;
+        uint8_t L_grid;
+        uint16_t vectors_dim;
+        double *window;
+        double delta;
+        const uint8_t factor = 10;
         /* Dataset info */
         std::vector<std::pair<T,T>> dataset_curves;
         std::vector<U> dataset_curves_ids;
         std::vector<int> dataset_curves_lengths;
         std::vector<int> dataset_curves_offsets;
         int no_curves;
+        std::map<U,int> map_id_to_index;
       public:
         /** \brief class Cluster constructor
           @par no_clusters: int, optional, default: 8
@@ -208,13 +217,14 @@ namespace cluster {
         */
         Cluster(int no_clusters = 8, int max_iter = 300,
           std::string init = "k-means++", std::string assign = "lloyds",
-          std::string update = "pam", uint8_t no_hf = 3, uint8_t no_ht = 1)
-          : no_clusters(no_clusters), max_iter(max_iter), init(init),
-          assign(assign), update(update), k(no_hf), L(no_ht)  {}
+          std::string update = "pam", uint8_t no_hf = 3, uint8_t no_ht = 5,
+          uint8_t no_grids = 5) : no_clusters(no_clusters), max_iter(max_iter),
+          init(init), assign(assign), update(update), k(no_hf),  L(no_ht),
+          L_grid(no_grids) {}
         /**
           \brief  Class Cluster default destructor
         */
-        ~Cluster() = default;
+        ~Cluster() { delete [] window;}
         /** \brief Fit method stores dataset info for clustering
           @par[in] dc : curves given from dataset
 					@par[in] dcl: a vector which store the length of each curve in the dataset
@@ -234,7 +244,40 @@ namespace cluster {
             to corresponding lsh structures
           */
           if (assign == "range-lsh") {
-            std::cout << "TODO" << std::endl;
+            /* Compute delta parameter */
+            delta = utils::ComputeDelta(dataset_curves, dataset_curves_lengths,
+                                        dataset_curves_offsets);
+            vectors_dim = 2 * *max_element(std::begin(dataset_curves_lengths),
+                                           std::end(dataset_curves_lengths));
+            /* Building no_grids Grids */
+            for (size_t i = 0; i < L_grid; ++i) {
+              grids.push_back(vectorization::Grid<T>(dataset_curves,
+                                            dataset_curves_lengths,
+                                            dataset_curves_offsets,
+                                            no_curves, vectors_dim, factor * delta));
+            }
+            /* Vectorizing dataset */
+            for (size_t i = 0; i < L_grid; ++i) {
+              L_grid_dataset_vectors.push_back(grids[i].Vectorize());
+            }
+            /* Compute window */
+            window = new double [L_grid];
+            for (size_t i = 0; i < L_grid; ++i) {
+              window[i] = utils::ComputeMean<T>(L_grid_dataset_vectors[i],
+                                                vectors_dim, no_curves);
+            }
+            /* Building LSH structures */
+            for (size_t i = 0; i < L_grid; ++i) {
+              lsh_structures.
+                push_back(search::vectors::LSH<T,U>(k, L, vectors_dim,
+                                                    no_curves, window[i],
+                                                    L_grid_dataset_vectors[i],
+                                                    dataset_curves_ids));
+            }
+            /* Map each id from dataset_curves_ids to its index */
+            for (size_t i = 0; i < no_curves; ++i) {
+              map_id_to_index[dataset_curves_ids[i]] = i;
+            }
           }
         }
         /**
@@ -269,7 +312,30 @@ namespace cluster {
 																					dataset_curves_offsets,
 																					no_curves, no_clusters);
 						} else if (assign == "range-lsh") {
-							std::cout << "TODO" << std::endl;
+              /* Vectorize centroids */
+              std::vector<std::pair<T,T>> centroids_curves = std::get<0>(centroids);
+              std::vector<int> centroids_curves_lengths = std::get<1>(centroids);
+              std::vector<int> centroids_curves_offsets = std::get<2>(centroids);
+              std::vector<std::vector<double>> L_grid_centroids_vectors(L_grid);
+              for (size_t i = 0; i < L_grid; ++i) {
+                L_grid_centroids_vectors[i] = grids[i].Vectorize(no_clusters,
+                                                centroids_curves,
+                                                centroids_curves_lengths,
+                                                centroids_curves_offsets);
+              }
+              std::vector<std::tuple<std::vector<std::vector<size_t>>,std::vector<T>>>
+              clusters_array(L_grid);
+              /* Execute reverse assignment */
+              for (size_t i = 0; i < L_grid; ++i) {
+                clusters_array[i] = cluster::assignment::
+                                      ReverseAssignment<T,U>(
+                                        L_grid_dataset_vectors[i],
+                                        dataset_curves_ids,
+                                        L_grid_centroids_vectors[i],
+                                        no_curves, vectors_dim,
+                                        no_clusters, &lsh_structures[i],
+                                        map_id_to_index);
+              }
 						}
             /* Update step */
 						if (update == "mean") {

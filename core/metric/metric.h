@@ -257,7 +257,8 @@ namespace metric {
         T min_dist = std::numeric_limits<T>::max();
         int min_id;
         // for every centroid compute manhattan distance to each other centroid
-        for (size_t j = i + 1; j < clusters.size(); ++j) {
+        for (size_t j = 0; j < clusters.size(); ++j) {
+          if (i == j) continue;
           T dist = ManhattanDistance<T>(
             std::next(centroids.begin(), i * vectors_dim),
             std::next(centroids.begin(), j * vectors_dim),
@@ -300,7 +301,7 @@ namespace metric {
             std::next(dataset_vectors.begin(), i * vectors_dim),
             std::next(dataset_vectors.begin(), i * vectors_dim + vectors_dim));
         }
-        if (cluster_vectors.size()) {
+        if (cluster_vectors.size() != 0) {
           b[it->first] = (double) b_total_dist / cluster_vectors.size();
         } else {
           b[it->first] = (double) b_total_dist;
@@ -372,7 +373,8 @@ namespace metric {
         T min_dist = std::numeric_limits<T>::max();
         int min_id;
         // for every centroid compute manhattan distance to each other centroid
-        for (size_t j = i + 1; j < clusters.size(); ++j) {
+        for (size_t j = 0; j < clusters.size(); ++j) {
+          if (i == j) continue;
           T dist = DTWDistance<T>(
           std::next(centroid_curves.begin(),centroid_curves_offsets[i]),
           std::next(centroid_curves.begin(),
@@ -388,9 +390,10 @@ namespace metric {
         }
         closest_centroid[i] = min_id;
       }
+
       /* Iterate over every vector to compute its a_i value */
       for (auto it = mapped_curves.cbegin(); it != mapped_curves.cend(); ++it) {
-        /* Get all vectors' indexes in the same cluster */
+        /* Get all curves' indexes in the same cluster */
         std::vector<size_t> cluster_curves = clusters[it->second];
         T a_total_dist{};
         for (const auto& i: cluster_curves) {
@@ -404,8 +407,7 @@ namespace metric {
           std::next(dataset_curves.begin(),
                     dataset_curves_offsets[i] + dataset_curves_lengths[i]));
         }
-        //std::cout << "CLuster: " << it->second << " size: " << cluster_curves.size() << std::endl;
-        if (cluster_curves.size() != 1) {
+        if (cluster_curves.size() != 1 && cluster_curves.size() != 0) {
           a[it->first] = (double) a_total_dist / (cluster_curves.size() - 1);
         } {
           a[it->first] = (double) a_total_dist;
