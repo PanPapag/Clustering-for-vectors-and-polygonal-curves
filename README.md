@@ -18,7 +18,7 @@ This project implements clustering algorithms for in Euclidian space R<sup>d</su
 Download source code by typing:
 
 ```
-https://github.com/PanPapag/Hashing-and-search-for-vectors-and-polygonal-curves.git
+https://github.com/PanPapag/Clustering-for-vectors-and-polygonal-curves.git
 ```
 
 ## License
