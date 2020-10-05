@@ -12,3 +12,15 @@ This project implements clustering algorithms for in Euclidian space R<sup>d</su
 **Update**
 1. Partitioning around medoids (PAM) \`a la Lloyds
 2. Calculating Mean Vector/DTW Centroid Curve
+
+## Installing
+
+Download source code by typing:
+
+```
+https://github.com/PanPapag/Hashing-and-search-for-vectors-and-polygonal-curves.git
+```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
